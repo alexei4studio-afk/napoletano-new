@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, MenuItemRow } from '@/lib/supabaseClient'
-import { LogOut, Save, ChefHat, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { LogOut, Save, ChefHat, Loader2, CheckCircle, XCircle, Plus, ChevronDown, ChevronUp } from 'lucide-react'
 
 // ── Types ─────────────────────────────────────────────────────
 type EditableItem = MenuItemRow & {
@@ -13,31 +13,45 @@ type EditableItem = MenuItemRow & {
 
 type GroupedItems = Record<string, EditableItem[]>
 
-const CATEGORY_LABELS: Record<string, string> = {
-  pizza:     '🍕 Pizza Napoletano',
-  speciale:  '⭐ Pizza Speciale',
-  antipasti: '🧀 Antipasti',
-  paste:     '🍝 Paste',
-  desert:    '🍮 Desert',
-  parteneri: '🤝 Produse Parteneri',
-  panini:    '🥪 Panini & Produse Pui',
+const CATEGORIES = [
+  { id: 'pizza',     label: '🍕 Pizza Napoletano' },
+  { id: 'speciale',  label: '⭐ Pizza Speciale' },
+  { id: 'antipasti', label: '🧀 Antipasti' },
+  { id: 'paste',     label: '🍝 Paste' },
+  { id: 'desert',    label: '🍮 Desert' },
+  { id: 'parteneri', label: '🤝 Produse Parteneri' },
+  { id: 'panini',    label: '🥪 Panini & Produse Pui' },
+]
+
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  CATEGORIES.map(c => [c.id, c.label])
+)
+
+const BADGES = ['', 'Bestseller', 'Signature', 'Premium', 'Picantă', 'Veggie', 'Top', 'Per 2', 'Clasic']
+
+const EMPTY_FORM = {
+  name: '',
+  name_it: '',
+  category_id: 'pizza',
+  ingredients: '',
+  price: '',
+  weight: '',
+  badge: '',
 }
 
-// ── Toast component ───────────────────────────────────────────
-function Toast({ type, onClose }: { type: 'success' | 'error'; onClose: () => void }) {
+// ── Toast ─────────────────────────────────────────────────────
+function Toast({ type, message, onClose }: { type: 'success' | 'error'; message: string; onClose: () => void }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 2500)
+    const t = setTimeout(onClose, 2800)
     return () => clearTimeout(t)
   }, [onClose])
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-all ${
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium ${
       type === 'success' ? 'bg-green-600' : 'bg-red-600'
     }`}>
-      {type === 'success'
-        ? <CheckCircle size={16} />
-        : <XCircle size={16} />}
-      {type === 'success' ? 'Salvat cu succes!' : 'Eroare la salvare!'}
+      {type === 'success' ? <CheckCircle size={16} /> : <XCircle size={16} />}
+      {message}
     </div>
   )
 }
@@ -55,17 +69,13 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
     setError(null)
     const { error: err } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
-    if (err) {
-      setError('Email sau parolă incorectă.')
-    } else {
-      onLogin()
-    }
+    if (err) setError('Email sau parolă incorectă.')
+    else onLogin()
   }
 
   return (
     <div className="min-h-screen bg-[#1C1A17] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="flex justify-center mb-4">
             <div className="w-14 h-14 bg-[#CE2B37] rounded-full flex items-center justify-center">
@@ -75,15 +85,11 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
           <h1 className="text-white font-display text-3xl font-light tracking-widest">NAPOLETANO</h1>
           <p className="text-white/40 text-xs tracking-widest uppercase mt-1">Admin Dashboard</p>
         </div>
-
-        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs tracking-widest uppercase text-white/50 mb-2">Email</label>
             <input
-              type="email"
-              required
-              value={email}
+              type="email" required value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@napoletano.ro"
               className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 px-4 py-3 text-sm rounded-lg focus:outline-none focus:border-[#CE2B37] transition-colors"
@@ -92,22 +98,15 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
           <div>
             <label className="block text-xs tracking-widest uppercase text-white/50 mb-2">Parolă</label>
             <input
-              type="password"
-              required
-              value={password}
+              type="password" required value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 px-4 py-3 text-sm rounded-lg focus:outline-none focus:border-[#CE2B37] transition-colors"
             />
           </div>
-
-          {error && (
-            <p className="text-red-400 text-xs text-center">{error}</p>
-          )}
-
+          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
           <button
-            type="submit"
-            disabled={loading}
+            type="submit" disabled={loading}
             className="w-full bg-[#CE2B37] hover:bg-[#b02330] disabled:opacity-60 text-white py-3 rounded-lg text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center gap-2"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
@@ -119,22 +118,201 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
   )
 }
 
+// ── Add Product Form ──────────────────────────────────────────
+function AddProductForm({ onAdded }: { onAdded: (categoryId: string) => void }) {
+  const [form, setForm]       = useState(EMPTY_FORM)
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast]     = useState<'success' | 'error' | null>(null)
+  const [open, setOpen]       = useState(true)
+
+  const set = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }))
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    const { data: existing } = await supabase
+      .from('menu_items')
+      .select('sort_order')
+      .eq('category_id', form.category_id)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+
+    const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order + 1) : 1
+
+    const { error } = await supabase.from('menu_items').insert({
+      category_id:  form.category_id,
+      name:         form.name.trim(),
+      name_it:      form.name_it.trim() || null,
+      ingredients:  form.ingredients.trim(),
+      price:        parseFloat(form.price) || 0,
+      weight:       form.weight.trim() || null,
+      badge:        form.badge || null,
+      sort_order:   nextOrder,
+    })
+
+    setLoading(false)
+
+    if (error) {
+      setToast('error')
+    } else {
+      setToast('success')
+      const addedCat = form.category_id
+      setForm(EMPTY_FORM)
+      onAdded(addedCat)
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-[#CE2B37] rounded-full flex items-center justify-center">
+            <Plus size={16} className="text-white" />
+          </div>
+          <span className="font-bold text-[#1C1A17] text-sm tracking-wide">Adaugă Produs Nou</span>
+        </div>
+        {open
+          ? <ChevronUp size={18} className="text-gray-400" />
+          : <ChevronDown size={18} className="text-gray-400" />}
+      </button>
+
+      {open && (
+        <form onSubmit={handleAdd} className="px-5 pb-5 border-t border-gray-100 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <div>
+              <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Nume *</label>
+              <input
+                required type="text" value={form.name}
+                onChange={(e) => set('name', e.target.value)}
+                placeholder="ex: Margherita"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">
+                Nume Italian <span className="normal-case text-gray-300">(opțional)</span>
+              </label>
+              <input
+                type="text" value={form.name_it}
+                onChange={(e) => set('name_it', e.target.value)}
+                placeholder="ex: La classica"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Categorie *</label>
+              <select
+                value={form.category_id}
+                onChange={(e) => set('category_id', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
+              >
+                {CATEGORIES.map(c => (
+                  <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Preț (lei) *</label>
+              <input
+                required type="number" step="0.5" min="0"
+                value={form.price}
+                onChange={(e) => set('price', e.target.value)}
+                placeholder="ex: 49"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">
+                Gramaj <span className="normal-case text-gray-300">(opțional)</span>
+              </label>
+              <input
+                type="text" value={form.weight}
+                onChange={(e) => set('weight', e.target.value)}
+                placeholder="ex: 500g"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Badge</label>
+              <select
+                value={form.badge}
+                onChange={(e) => set('badge', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
+              >
+                {BADGES.map(b => (
+                  <option key={b} value={b}>{b || '— Fără badge —'}</option>
+                ))}
+              </select>
+            </div>
+
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Ingrediente *</label>
+            <textarea
+              required rows={2} value={form.ingredients}
+              onChange={(e) => set('ingredients', e.target.value)}
+              placeholder="ex: Aluat 280g, sos de roșii, mozzarella, parmezan, busuioc"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50 resize-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-between mt-4">
+            <div>
+              {toast === 'success' && (
+                <span className="flex items-center gap-1 text-green-600 text-xs font-bold">
+                  <CheckCircle size={13} /> Produs adăugat cu succes!
+                </span>
+              )}
+              {toast === 'error' && (
+                <span className="flex items-center gap-1 text-red-500 text-xs font-bold">
+                  <XCircle size={13} /> Eroare la adăugare!
+                </span>
+              )}
+            </div>
+            <button
+              type="submit" disabled={loading}
+              className="flex items-center gap-2 bg-[#CE2B37] hover:bg-[#b02330] disabled:opacity-60 text-white px-6 py-2.5 rounded-lg text-xs font-bold tracking-widest uppercase transition-colors shadow-md"
+            >
+              {loading ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+              {loading ? 'Se adaugă...' : 'Adaugă Produs'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {toast && (
+        <Toast
+          type={toast}
+          message={toast === 'success' ? 'Produs adăugat cu succes!' : 'Eroare la adăugare!'}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  )
+}
+
 // ── Main Dashboard ────────────────────────────────────────────
 export default function AdminPage() {
-  const [session, setSession]       = useState<boolean | null>(null) // null = loading
-  const [items, setItems]           = useState<GroupedItems>({})
-  const [loadingData, setLoadingData] = useState(false)
-  const [globalToast, setGlobalToast] = useState<'success' | 'error' | null>(null)
+  const [session, setSession]             = useState<boolean | null>(null)
+  const [items, setItems]                 = useState<GroupedItems>({})
+  const [loadingData, setLoadingData]     = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>('pizza')
 
-  // Check session on mount
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(!!data.session)
-    })
+    supabase.auth.getSession().then(({ data }) => setSession(!!data.session))
   }, [])
 
-  // Load all items once logged in
   const loadItems = useCallback(async () => {
     setLoadingData(true)
     const { data, error } = await supabase
@@ -152,9 +330,6 @@ export default function AdminPage() {
       grouped[row.category_id].push({ ...row, _dirty: false, _saving: false, _toast: null })
     }
     setItems(grouped)
-    // Set first category as active
-    const firstCat = Object.keys(grouped)[0]
-    if (firstCat) setActiveCategory(firstCat)
   }, [])
 
   useEffect(() => {
@@ -164,6 +339,11 @@ export default function AdminPage() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setSession(false)
+  }
+
+  const handleAdded = (categoryId: string) => {
+    setActiveCategory(categoryId)
+    loadItems()
   }
 
   const updateField = (catId: string, itemId: number, field: 'price' | 'ingredients' | 'weight' | 'badge', value: string) => {
@@ -178,7 +358,6 @@ export default function AdminPage() {
   }
 
   const saveItem = async (catId: string, item: EditableItem) => {
-    // Mark as saving
     setItems(prev => ({
       ...prev,
       [catId]: prev[catId].map(i => i.id === item.id ? { ...i, _saving: true } : i)
@@ -186,12 +365,7 @@ export default function AdminPage() {
 
     const { error } = await supabase
       .from('menu_items')
-      .update({
-        price:       item.price,
-        ingredients: item.ingredients,
-        weight:      item.weight,
-        badge:       item.badge,
-      })
+      .update({ price: item.price, ingredients: item.ingredients, weight: item.weight, badge: item.badge })
       .eq('id', item.id)
 
     setItems(prev => ({
@@ -203,7 +377,6 @@ export default function AdminPage() {
       )
     }))
 
-    // Clear toast after 2.5s
     setTimeout(() => {
       setItems(prev => ({
         ...prev,
@@ -212,7 +385,6 @@ export default function AdminPage() {
     }, 2500)
   }
 
-  // ── Loading state ─────────────────────────────────────────
   if (session === null) {
     return (
       <div className="min-h-screen bg-[#1C1A17] flex items-center justify-center">
@@ -221,12 +393,8 @@ export default function AdminPage() {
     )
   }
 
-  // ── Login ─────────────────────────────────────────────────
-  if (!session) {
-    return <LoginForm onLogin={() => setSession(true)} />
-  }
+  if (!session) return <LoginForm onLogin={() => setSession(true)} />
 
-  // ── Dashboard ─────────────────────────────────────────────
   const categories = Object.keys(items)
   const currentItems = items[activeCategory] ?? []
 
@@ -234,7 +402,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-[#1C1A17] border-b border-white/10 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-[#CE2B37] rounded-full flex items-center justify-center">
               <ChefHat size={16} className="text-white" />
@@ -254,10 +422,13 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-4 py-6">
 
-        {/* Category tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* ── ADD PRODUCT ──────────────────────────────────── */}
+        <AddProductForm onAdded={handleAdded} />
+
+        {/* ── TABS ─────────────────────────────────────────── */}
+        <div className="flex flex-wrap gap-2 mb-4">
           {categories.map(catId => (
             <button
               key={catId}
@@ -269,18 +440,18 @@ export default function AdminPage() {
               }`}
             >
               {CATEGORY_LABELS[catId] ?? catId}
+              <span className="ml-1.5 opacity-60">({items[catId]?.length ?? 0})</span>
             </button>
           ))}
         </div>
 
-        {/* Loading */}
         {loadingData && (
           <div className="flex justify-center py-20">
             <Loader2 size={32} className="text-[#CE2B37] animate-spin" />
           </div>
         )}
 
-        {/* Items table */}
+        {/* ── ITEMS ────────────────────────────────────────── */}
         {!loadingData && currentItems.length > 0 && (
           <div className="space-y-3">
             {currentItems.map(item => (
@@ -291,13 +462,10 @@ export default function AdminPage() {
                 }`}
               >
                 <div className="p-4">
-                  {/* Name row */}
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
                       <h3 className="font-bold text-[#1C1A17] text-sm">{item.name}</h3>
-                      {item.name_it && (
-                        <p className="text-[#CE2B37] text-xs italic">{item.name_it}</p>
-                      )}
+                      {item.name_it && <p className="text-[#CE2B37] text-xs italic">{item.name_it}</p>}
                     </div>
                     {item._dirty && (
                       <span className="flex-shrink-0 text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
@@ -306,76 +474,51 @@ export default function AdminPage() {
                     )}
                   </div>
 
-                  {/* Editable fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    {/* Price */}
                     <div>
-                      <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">
-                        Preț (lei)
-                      </label>
+                      <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Preț (lei)</label>
                       <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        value={item.price}
+                        type="number" step="0.5" min="0" value={item.price}
                         onChange={(e) => updateField(activeCategory, item.id, 'price', e.target.value)}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
                       />
                     </div>
-
-                    {/* Weight / Badge */}
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">
-                          Gramaj
-                        </label>
+                        <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Gramaj</label>
                         <input
-                          type="text"
-                          value={item.weight ?? ''}
+                          type="text" value={item.weight ?? ''}
                           onChange={(e) => updateField(activeCategory, item.id, 'weight', e.target.value)}
                           placeholder="ex: 500g"
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">
-                          Badge
-                        </label>
+                        <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Badge</label>
                         <select
                           value={item.badge ?? ''}
                           onChange={(e) => updateField(activeCategory, item.id, 'badge', e.target.value)}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50"
                         >
-                          <option value="">Fără</option>
-                          <option value="Bestseller">Bestseller</option>
-                          <option value="Signature">Signature</option>
-                          <option value="Premium">Premium</option>
-                          <option value="Picantă">Picantă</option>
-                          <option value="Veggie">Veggie</option>
-                          <option value="Top">Top</option>
-                          <option value="Per 2">Per 2</option>
-                          <option value="Clasic">Clasic</option>
+                          {BADGES.map(b => (
+                            <option key={b} value={b}>{b || 'Fără'}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
                   </div>
 
-                  {/* Ingredients */}
                   <div className="mb-3">
-                    <label className="block text-[10px] tracking-widests uppercase text-gray-400 mb-1">
-                      Ingrediente
-                    </label>
+                    <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Ingrediente</label>
                     <textarea
-                      rows={2}
-                      value={item.ingredients}
+                      rows={2} value={item.ingredients}
                       onChange={(e) => updateField(activeCategory, item.id, 'ingredients', e.target.value)}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1C1A17] focus:outline-none focus:border-[#CE2B37] transition-colors bg-gray-50 resize-none"
                     />
                   </div>
 
-                  {/* Save button */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div>
                       {item._toast === 'success' && (
                         <span className="flex items-center gap-1 text-green-600 text-xs font-bold">
                           <CheckCircle size={13} /> Salvat!
@@ -396,9 +539,7 @@ export default function AdminPage() {
                           : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                       }`}
                     >
-                      {item._saving
-                        ? <Loader2 size={12} className="animate-spin" />
-                        : <Save size={12} />}
+                      {item._saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
                       {item._saving ? 'Se salvează...' : 'Salvează'}
                     </button>
                   </div>
@@ -407,12 +548,15 @@ export default function AdminPage() {
             ))}
           </div>
         )}
-      </div>
 
-      {/* Global toast */}
-      {globalToast && (
-        <Toast type={globalToast} onClose={() => setGlobalToast(null)} />
-      )}
+        {!loadingData && currentItems.length === 0 && (
+          <div className="text-center py-16 text-gray-400">
+            <p className="text-sm">Niciun produs în această categorie.</p>
+            <p className="text-xs mt-1">Adaugă primul produs folosind formularul de mai sus.</p>
+          </div>
+        )}
+
+      </div>
     </div>
   )
 }
