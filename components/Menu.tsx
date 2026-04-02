@@ -4,14 +4,11 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { menuData } from '@/lib/menuData'
 
-// ── CONSTANTE STIL TRICOLOR (Roșu - Alb - Verde) ────────────────────────────
-const TRICOLOR_STYLE = {
-  // Gradient cu opriri bruște (hard stops) la 33.3% pentru împărțire egală
+// ── STIL TRICOLOR (Doar pentru categorii/tabs pe fundal inchis) ─────────────
+const TRICOLOR_TAB_STYLE = {
   background: 'linear-gradient(to right, #CE2B37 33.33%, #ffffff 33.33%, #ffffff 66.66%, #009246 66.66%)',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  // Contur negru gros pentru vizibilitatea albului
-  WebkitTextStroke: '1.5px #000000', 
   display: 'inline-block',
 }
 
@@ -47,43 +44,20 @@ export default function Menu() {
           <div className="h-[2px] w-7 bg-[#009246]" />
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-[#CE2B37] text-[10px] tracking-[0.4em] uppercase font-body mb-3"
-        >
+        <motion.p className="text-[#CE2B37] text-[10px] tracking-[0.4em] uppercase font-body mb-3">
           Cucina Napoletana · București
         </motion.p>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="font-display text-5xl md:text-6xl font-light text-white mb-3"
-          style={{ letterSpacing: '-0.01em' }}
-        >
+        <motion.h2 className="font-display text-5xl md:text-6xl font-light text-white mb-3">
           Il Nostro Menù
         </motion.h2>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15 }}
-          className="text-white/50 font-body font-light text-sm"
-        >
+        <motion.p className="text-white/50 font-body font-light text-sm">
           Ingrediente DOP din Italia · Aluat dospit 72 ore · Cuptor cu lemne 450°C
         </motion.p>
-
-        <div className="absolute bottom-0 left-0 right-0 flex h-[3px]">
-          <div className="flex-1 bg-[#009246]" />
-          <div className="flex-1 bg-white/30" />
-          <div className="flex-1 bg-[#CE2B37]" />
-        </div>
       </div>
 
-      {/* ── TABS ────────────────────────────────────────────────────────────── */}
+      {/* ── TABS (Categorii - Aici tricolorul e corect) ────────────────────── */}
       <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center">
           {menuData.map((cat) => (
@@ -91,13 +65,11 @@ export default function Menu() {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`relative flex items-center gap-2 px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
-                activeCategory === cat.id
-                  ? 'border-[#CE2B37]'
-                  : 'border-transparent opacity-70 hover:opacity-100'
+                activeCategory === cat.id ? 'border-[#CE2B37]' : 'border-transparent opacity-70 hover:opacity-100'
               }`}
             >
               <span className="text-[15px]">{cat.icon}</span>
-              <span style={TRICOLOR_STYLE}>
+              <span style={TRICOLOR_TAB_STYLE}>
                 {cat.label}
               </span>
             </button>
@@ -109,55 +81,27 @@ export default function Menu() {
       <div className="bg-[#FDF8EE] min-h-[60vh]">
         
         <AnimatePresence mode="wait">
-          <motion.div
-            key={activeCategory + '-label'}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="text-center py-7 px-4"
-          >
+          <motion.div key={activeCategory + '-label'} className="text-center py-7 px-4">
             <p className="font-display italic text-[#CE2B37] text-xl font-light">
               {activeData.labelIt}
             </p>
-            <div className="flex items-center justify-center gap-3 mt-3">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#CE2B37]/40 to-transparent" />
-              <div className="w-[5px] h-[5px] bg-[#CE2B37] rotate-45" />
-              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#CE2B37]/40 to-transparent" />
-            </div>
           </motion.div>
         </AnimatePresence>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={activeCategory}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35 }}
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10"
-          >
+          <motion.div key={activeCategory} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[rgba(206,43,55,0.15)] border border-[rgba(206,43,55,0.15)]">
               {activeData.items.map((item, i) => (
                 <motion.div
                   key={item.name}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
                   className="group relative bg-[#FFFEF5] hover:bg-[#FFFBF0] transition-colors duration-200 p-5 md:p-6"
                 >
                   <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#009246] scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-300" />
 
-                  {item.badge && (
-                    <span className={`absolute top-4 right-4 text-[9px] tracking-[0.18em] uppercase font-body px-2.5 py-1 ${BADGE[item.badge] ?? 'bg-[#1C1A17] text-white'}`}>
-                      {item.badge}
-                    </span>
-                  )}
-
-                  {/* TITLU PRODUS (Roșu-Alb-Verde cu Border Negru) */}
+                  {/* REVENIM LA STILUL ORIGINAL PENTRU PRODUSE (Margherita, etc.) */}
                   <h3 
-                    className="font-display text-[1.5rem] uppercase leading-snug pr-20"
-                    style={{ ...TRICOLOR_STYLE, fontWeight: 900 }}
+                    className="font-display text-[1.25rem] font-semibold text-[#1C1A17] leading-snug pr-20 uppercase"
+                    style={{ fontWeight: 600 }}
                   >
                     {item.name}
                   </h3>
@@ -169,7 +113,7 @@ export default function Menu() {
                   )}
 
                   <div className="flex items-center gap-3 my-[0.6rem]">
-                    <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" style={{ borderBottomWidth: '1px' }} />
+                    <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" />
                     <span className="font-display text-[1.45rem] font-light text-[#1C1A17]">
                       {item.price}
                     </span>
@@ -190,35 +134,12 @@ export default function Menu() {
             </div>
           </motion.div>
         </AnimatePresence>
-
-        {/* ... restul codului pentru legendă și note rămâne neschimbat ... */}
-        <div className="max-w-7xl mx-auto px-6 pb-6 flex flex-wrap gap-x-5 gap-y-2 justify-center">
-          {[
-            { label: 'Bestseller', cls: 'bg-[#CE2B37]' },
-            { label: 'Signature',  cls: 'bg-[#1C1A17]' },
-            { label: 'Premium',    cls: 'bg-[#C9922A]' },
-            { label: 'Veggie',      cls: 'bg-[#009246]' },
-            { label: 'Picant',      cls: 'bg-[#E85D1A]' },
-          ].map(({ label, cls }) => (
-            <span key={label} className="flex items-center gap-1.5 text-[11px] text-[#5A5340] font-body">
-              <span className={`inline-block w-[9px] h-[9px] ${cls}`} />
-              {label}
-            </span>
-          ))}
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 pb-10">
-          <p className="text-center text-[11px] text-[#8C7E65] font-body font-light border-t pt-4 border-[rgba(206,43,55,0.15)]">
-            * Informații despre alergeni disponibile la cerere &nbsp;·&nbsp;
-            Prețurile includ TVA &nbsp;·&nbsp;
-            Gramajele sunt înainte de preparare
-          </p>
-        </div>
       </div>
 
+      {/* FOOTER TRICOLOR */}
       <div className="flex h-[6px]">
         <div className="flex-1 bg-[#CE2B37]" />
-        <div className="flex-1 bg-white border-y border-[rgba(206,43,55,0.15)]" />
+        <div className="flex-1 bg-white" />
         <div className="flex-1 bg-[#009246]" />
       </div>
     </section>
