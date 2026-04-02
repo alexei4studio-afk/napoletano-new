@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { menuData } from '@/lib/menuData'
+import { Facebook, Instagram } from 'lucide-react'
 
 // ── STIL TRICOLOR (Doar pentru categorii/tabs pe fundal inchis) ─────────────
 const TRICOLOR_TAB_STYLE = {
@@ -32,10 +33,40 @@ export default function Menu() {
 
       {/* ── HEADER DARK ────────────────────────────────────────────────── */}
       <div className="relative bg-[#1C1A17] text-center px-4 pt-10 pb-8">
+        {/* Tricolor de sus */}
         <div className="absolute top-0 left-0 right-0 flex h-[5px]">
           <div className="flex-1 bg-[#009246]" />
           <div className="flex-1 bg-white" />
           <div className="flex-1 bg-[#CE2B37]" />
+        </div>
+
+        {/* BUTOANE SOCIAL MEDIA */}
+        <div className="flex justify-center gap-6 mb-6">
+          <a 
+            href="https://www.facebook.com/ventonapoletano" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white/40 hover:text-[#1877F2] transition-colors duration-300"
+          >
+            <Facebook size={20} />
+          </a>
+          <a 
+            href="https://www.instagram.com/ventonapoletano" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white/40 hover:text-[#E4405F] transition-colors duration-300"
+          >
+            <Instagram size={20} />
+          </a>
+          <a 
+            href="https://www.tiktok.com/@ventonapoletano" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white/40 hover:text-[#00f2ea] transition-colors duration-300"
+          >
+            {/* SVG Custom pentru TikTok */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+          </a>
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-4">
@@ -57,7 +88,7 @@ export default function Menu() {
         </motion.p>
       </div>
 
-      {/* ── TABS (Categorii - Aici tricolorul e corect) ────────────────────── */}
+      {/* ── TABS (Categorii) ────────────────────── */}
       <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center">
           {menuData.map((cat) => (
@@ -98,7 +129,6 @@ export default function Menu() {
                 >
                   <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#009246] scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-300" />
 
-                  {/* REVENIM LA STILUL ORIGINAL PENTRU PRODUSE (Margherita, etc.) */}
                   <h3 
                     className="font-display text-[1.25rem] font-semibold text-[#1C1A17] leading-snug pr-20 uppercase"
                     style={{ fontWeight: 600 }}
