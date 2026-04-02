@@ -40,43 +40,49 @@ export default function Menu() {
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
 
-        {/* RÂND BUTOANE: Social + Buton WOLT (Zero Tazz) */}
-        <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
-          <a 
-            href="https://www.facebook.com/ventonapoletano" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-white/40 hover:text-[#1877F2] transition-colors"
-          >
-            <Facebook size={20} />
-          </a>
-          <a 
-            href="https://www.instagram.com/ventonapoletano" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-white/40 hover:text-[#E4405F] transition-colors"
-          >
-            <Instagram size={20} />
-          </a>
+        {/* RÂND BUTOANE REARANJATE: Facebook -> Instagram -> TikTok -> WOLT */}
+        <div className="flex flex-wrap justify-center items-center gap-8 mb-8">
+          
+          {/* Grupul Social Media */}
+          <div className="flex items-center gap-6">
+            <a 
+              href="https://www.facebook.com/ventonapoletano" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-white/40 hover:text-[#1877F2] transition-colors duration-300"
+            >
+              <Facebook size={20} />
+            </a>
+            <a 
+              href="https://www.instagram.com/ventonapoletano" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-white/40 hover:text-[#E4405F] transition-colors duration-300"
+            >
+              <Instagram size={20} />
+            </a>
+            <a 
+              href="https://www.tiktok.com/@ventonapoletano" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-white/40 hover:text-[#00f2ea] transition-colors duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+            </a>
+          </div>
 
-          {/* Buton WOLT Oficial */}
+          {/* Separator vizual fin pentru Desktop */}
+          <div className="hidden sm:block w-px h-4 bg-white/10" />
+
+          {/* Buton WOLT (Call to Action) */}
           <a 
             href="https://www.wolt.com/ro/rou/bucharest/restaurant/vento-napoletano" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-[#00C2E8] px-5 py-2 rounded-full hover:scale-105 transition-transform shadow-lg active:scale-95"
+            className="flex items-center gap-2 bg-[#00C2E8] px-6 py-2 rounded-full hover:scale-105 transition-transform shadow-lg active:scale-95"
           >
             <span className="text-white text-[10px] font-bold uppercase tracking-wider">Comandă pe</span>
             <span className="text-white font-black italic text-base tracking-tighter">Wolt</span>
-          </a>
-
-          <a 
-            href="https://www.tiktok.com/@ventonapoletano" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-white/40 hover:text-[#00f2ea] transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
           </a>
         </div>
 
