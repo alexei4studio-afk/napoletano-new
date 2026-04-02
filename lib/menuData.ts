@@ -175,7 +175,7 @@ export const menuData: MenuCategory[] = [
     id: 'antipasti',
     label: 'Antipasti',
     labelIt: 'Per cominciare',
-    icon: '🫒',
+    icon: '🧀', // Actualizat pentru vizibilitate
     items: [
       {
         name: 'Crudo di Parma e Bufala',
