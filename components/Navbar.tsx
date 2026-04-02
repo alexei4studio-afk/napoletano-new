@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 const navLinks = [
   { href: '#meniu', label: 'Meniu' },
+  { href: '#evenimente', label: 'Oferte' }, // Direcționează către secțiunea de Evenimente (Capacitate 35 pers)
   { href: '#poveste', label: 'Povestea Noastră' },
   { href: '#galerie', label: 'Galerie' },
   { href: '#contact', label: 'Contact' },
@@ -74,7 +75,7 @@ export default function Navbar() {
                 <span>0731 333 112</span>
               </a>
               <a
-                href="#rezerva"
+                href="#rezervare"
                 className="bg-pomodoro-600 hover:bg-pomodoro-700 text-white text-xs tracking-widest uppercase font-body px-5 py-2.5 transition-colors duration-200"
               >
                 Rezervă Masă
@@ -142,7 +143,7 @@ export default function Navbar() {
                 0731 333 112
               </a>
               <a
-                href="#rezerva"
+                href="#rezervare"
                 onClick={() => setMenuOpen(false)}
                 className="bg-pomodoro-600 text-white text-xs tracking-widest uppercase font-body px-8 py-3"
               >
