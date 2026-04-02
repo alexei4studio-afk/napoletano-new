@@ -4,11 +4,14 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { menuData } from '@/lib/menuData'
 
-// ── CONSTANTE STIL TRICOLOR ────────────────────────────────────────────────
+// ── CONSTANTE STIL TRICOLOR (Roșu - Alb - Verde) ────────────────────────────
 const TRICOLOR_STYLE = {
-  background: 'linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #CE2B37 66.6%)',
+  // Gradient cu opriri bruște (hard stops) la 33.3% pentru împărțire egală
+  background: 'linear-gradient(to right, #CE2B37 33.33%, #ffffff 33.33%, #ffffff 66.66%, #009246 66.66%)',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
+  // Contur negru gros pentru vizibilitatea albului
+  WebkitTextStroke: '1.5px #000000', 
   display: 'inline-block',
 }
 
@@ -39,9 +42,9 @@ export default function Menu() {
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="h-[2px] w-7 bg-[#009246]" />
-          <div className="h-[2px] w-7 bg-white/40" />
           <div className="h-[2px] w-7 bg-[#CE2B37]" />
+          <div className="h-[2px] w-7 bg-white/40" />
+          <div className="h-[2px] w-7 bg-[#009246]" />
         </div>
 
         <motion.p
@@ -80,7 +83,7 @@ export default function Menu() {
         </div>
       </div>
 
-      {/* ── TABS (Categorii cu Tricolor) ────────────────────────────────────── */}
+      {/* ── TABS ────────────────────────────────────────────────────────────── */}
       <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center">
           {menuData.map((cat) => (
@@ -94,8 +97,7 @@ export default function Menu() {
               }`}
             >
               <span className="text-[15px]">{cat.icon}</span>
-              {/* TITLU CATEGORIE TRICOLOR */}
-              <span style={TRICOLOR_STYLE} className="drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+              <span style={TRICOLOR_STYLE}>
                 {cat.label}
               </span>
             </button>
@@ -152,9 +154,9 @@ export default function Menu() {
                     </span>
                   )}
 
-                  {/* TITLU PRODUS TRICOLOR (MARGHERITA, etc) */}
+                  {/* TITLU PRODUS (Roșu-Alb-Verde cu Border Negru) */}
                   <h3 
-                    className="font-display text-[1.4rem] uppercase leading-snug pr-20 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
+                    className="font-display text-[1.5rem] uppercase leading-snug pr-20"
                     style={{ ...TRICOLOR_STYLE, fontWeight: 900 }}
                   >
                     {item.name}
@@ -189,6 +191,7 @@ export default function Menu() {
           </motion.div>
         </AnimatePresence>
 
+        {/* ... restul codului pentru legendă și note rămâne neschimbat ... */}
         <div className="max-w-7xl mx-auto px-6 pb-6 flex flex-wrap gap-x-5 gap-y-2 justify-center">
           {[
             { label: 'Bestseller', cls: 'bg-[#CE2B37]' },
@@ -214,9 +217,9 @@ export default function Menu() {
       </div>
 
       <div className="flex h-[6px]">
-        <div className="flex-1 bg-[#009246]" />
-        <div className="flex-1 bg-white border-y border-[rgba(206,43,55,0.15)]" />
         <div className="flex-1 bg-[#CE2B37]" />
+        <div className="flex-1 bg-white border-y border-[rgba(206,43,55,0.15)]" />
+        <div className="flex-1 bg-[#009246]" />
       </div>
     </section>
   )
