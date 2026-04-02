@@ -9,33 +9,49 @@ type Message = {
   text: string
 }
 
-// ── CONFIGURARE RĂSPUNSURI (Cu link-uri active) ──────────────────────────────
+// ── CONFIGURARE RĂSPUNSURI ──────────────────────────────────────────────
 const BOT_RESPONSES: Record<string, string> = {
   default:
-    'Ciao! Sunt Napoletano Bot 🍕 Pot să te ajut cu informații despre meniu, rezervări sau program.',
+    'Ciao! Sunt Napoletano Bot 🍕 Pot să te ajut cu informații despre meniu, livrare prin Wolt sau rezervări.',
+  
+  whatsapp: 
+    'Poți să ne scrii direct pe WhatsApp aici pentru detalii rapide: <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-[#25D366]">Deschide WhatsApp</a>',
+
   rezervare:
-    'Pentru rezervări poți completa <a href="#rezervare" class="underline font-bold text-pomodoro-600">formularul din secțiunea "Rezervă Masă"</a> de pe site, sau poți suna direct la <a href="tel:0731333112" class="underline font-bold text-pomodoro-600">0731 333 112</a>. <br/><br/><b>Program:</b> Lun–Joi 12–23, Vin–Dum 12–24.',
+    'Pentru rezervări poți completa <a href="#rezervare" class="underline font-bold text-[#CE2B37]">formularul de pe site</a>, sau poți suna direct la <a href="tel:0731333112" class="underline font-bold text-[#CE2B37]">0731 333 112</a>. <br/><br/><b>Program:</b> Lun–Joi 12–23, Vin–Dum 12–24.',
+  
   program:
     '<b>Program:</b><br/>Luni – Joi: 12:00 – 23:00<br/>Vineri – Duminică: 12:00 – 00:00.<br/><br/>📍 Ion Nonna Otescu nr. 2, Sector 6.',
+  
   adresa:
     'Ne găsești la <b>Ion Nonna Otescu nr. 2, Sector 6, București</b>. Parcare disponibilă în zonă. 📍',
-  whatsapp: 
-    'Poți să ne scrii direct pe WhatsApp aici: <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-green-600">Deschide WhatsApp</a>',
+  
   meniu:
-    'Avem pizza napoletană autentică (45-69 lei), paste proaspete și antipasti. <a href="#meniu" class="underline font-bold">Vezi meniul complet aici.</a>',
+    'Avem pizza napoletană autentică, <b>Panini & Produse Pui</b> și Paste. <a href="#meniu" class="underline font-bold text-[#CE2B37]">Vezi meniul complet aici.</a>',
+
+  livrare:
+    'Suntem pe <b>Wolt</b>! Comandă pizza, panini sau pui crispy direct la tine acasă. <br/><br/> <a href="https://www.wolt.com/ro/rou/bucharest/restaurant/vento-napoletano" target="_blank" class="inline-block bg-[#00C2E8] text-white px-4 py-1.5 rounded-full text-[10px] font-bold no-underline mt-1">COMANDĂ PE WOLT</a>',
+
+  produse_noi:
+    'Încearcă noile noastre produse: <b>Panini artizanale</b>, fâșii de pui <b>Crispy</b> sau aripioare picante! Avem și o selecție de produse italiene pentru acasă în secțiunea Parteneri. 🤝'
 }
 
 function getResponse(input: string): string {
   const lower = input.toLowerCase()
+  
+  if (lower.includes('whatsapp') || lower.includes('scrie') || lower.includes('mesaj')) return BOT_RESPONSES.whatsapp
   if (lower.includes('rezerv') || lower.includes('masa')) return BOT_RESPONSES.rezervare
   if (lower.includes('program') || lower.includes('orar')) return BOT_RESPONSES.program
   if (lower.includes('adres') || lower.includes('unde')) return BOT_RESPONSES.adresa
-  if (lower.includes('whatsapp') || lower.includes('scrie')) return BOT_RESPONSES.whatsapp
-  if (lower.includes('meniu') || lower.includes('pret') || lower.includes('preț')) return BOT_RESPONSES.meniu
-  return 'Pentru detalii despre rezervări, meniu sau program, alege una din opțiunile de mai jos sau sună-ne la <a href="tel:0731333112">0731 333 112</a>. 🍕'
+  if (lower.includes('livr') || lower.includes('wolt') || lower.includes('comand') || lower.includes('acasa')) return BOT_RESPONSES.livrare
+  if (lower.includes('pui') || lower.includes('panini') || lower.includes('crispy') || lower.includes('parteneri')) return BOT_RESPONSES.produse_noi
+  if (lower.includes('meniu') || lower.includes('pret') || lower.includes('preț') || lower.includes('mancare')) return BOT_RESPONSES.meniu
+  
+  return 'Te pot ajuta cu detalii despre <b>WhatsApp</b>, <b>Meniu</b>, <b>Livrare Wolt</b> sau <b>Rezervări</b>. 🍕'
 }
 
-const QUICK_REPLIES = ['Program', 'Rezervare', 'Meniu & Prețuri', 'Adresă', 'WhatsApp']
+// AICI AM PUS WHATSAPP PRIMUL:
+const QUICK_REPLIES = ['WhatsApp', 'Livrare Wolt', 'Meniu', 'Panini & Pui', 'Rezervare']
 
 export default function ChatBot() {
   const [open, setOpen] = useState(false)
@@ -63,7 +79,6 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating button */}
       <motion.button
         onClick={() => setOpen(true)}
         className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#CE2B37] text-white rounded-full items-center justify-center shadow-xl ${open ? 'hidden' : 'flex'}`}
@@ -72,7 +87,6 @@ export default function ChatBot() {
         <MessageCircle size={24} />
       </motion.button>
 
-      {/* Chat window */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -82,7 +96,6 @@ export default function ChatBot() {
             className="fixed bottom-6 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[380px] bg-white border border-gray-200 shadow-2xl flex flex-col overflow-hidden rounded-t-xl"
             style={{ height: '550px' }}
           >
-            {/* Header */}
             <div className="bg-[#CE2B37] px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-xl">🍕</div>
@@ -97,7 +110,6 @@ export default function ChatBot() {
               <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white"><X size={20} /></button>
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -117,7 +129,6 @@ export default function ChatBot() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Quick replies */}
             <div className="px-3 py-2 bg-white border-t border-gray-100 flex gap-2 overflow-x-auto no-scrollbar">
               {QUICK_REPLIES.map((qr) => (
                 <button
@@ -130,7 +141,6 @@ export default function ChatBot() {
               ))}
             </div>
 
-            {/* Input */}
             <div className="px-4 py-4 bg-white border-t border-gray-100 flex gap-2">
               <input
                 type="text"
