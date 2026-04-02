@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { menuData } from '@/lib/menuData'
 import { Facebook, Instagram } from 'lucide-react'
 
-// ── STIL TRICOLOR (Doar pentru categorii/tabs pe fundal inchis) ─────────────
+// ── STIL TRICOLOR (Categorii/tabs) ─────────────────────────────
 const TRICOLOR_TAB_STYLE = {
   background: 'linear-gradient(to right, #CE2B37 33.33%, #ffffff 33.33%, #ffffff 66.66%, #009246 66.66%)',
   WebkitBackgroundClip: 'text',
@@ -31,7 +31,7 @@ export default function Menu() {
   return (
     <section id="meniu" className="py-0">
 
-      {/* ── HEADER DARK ────────────────────────────────────────────────── */}
+      {/* ── HEADER DARK (Social + Wolt) ────────────────────────────────── */}
       <div className="relative bg-[#1C1A17] text-center px-4 pt-10 pb-8">
         {/* Tricolor de sus */}
         <div className="absolute top-0 left-0 right-0 flex h-[5px]">
@@ -40,13 +40,13 @@ export default function Menu() {
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
 
-        {/* BUTOANE SOCIAL MEDIA */}
-        <div className="flex justify-center gap-6 mb-6">
+        {/* RÂND BUTOANE: Social + Buton WOLT (Zero Tazz) */}
+        <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
           <a 
             href="https://www.facebook.com/ventonapoletano" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-white/40 hover:text-[#1877F2] transition-colors duration-300"
+            className="text-white/40 hover:text-[#1877F2] transition-colors"
           >
             <Facebook size={20} />
           </a>
@@ -54,17 +54,28 @@ export default function Menu() {
             href="https://www.instagram.com/ventonapoletano" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-white/40 hover:text-[#E4405F] transition-colors duration-300"
+            className="text-white/40 hover:text-[#E4405F] transition-colors"
           >
             <Instagram size={20} />
           </a>
+
+          {/* Buton WOLT Oficial */}
+          <a 
+            href="https://www.wolt.com/ro/rou/bucharest/restaurant/vento-napoletano" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-[#00C2E8] px-5 py-2 rounded-full hover:scale-105 transition-transform shadow-lg active:scale-95"
+          >
+            <span className="text-white text-[10px] font-bold uppercase tracking-wider">Comandă pe</span>
+            <span className="text-white font-black italic text-base tracking-tighter">Wolt</span>
+          </a>
+
           <a 
             href="https://www.tiktok.com/@ventonapoletano" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-white/40 hover:text-[#00f2ea] transition-colors duration-300"
+            className="text-white/40 hover:text-[#00f2ea] transition-colors"
           >
-            {/* SVG Custom pentru TikTok */}
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
           </a>
         </div>
@@ -110,7 +121,6 @@ export default function Menu() {
 
       {/* ── BODY ────────────────────────────────────────────────────────────── */}
       <div className="bg-[#FDF8EE] min-h-[60vh]">
-        
         <AnimatePresence mode="wait">
           <motion.div key={activeCategory + '-label'} className="text-center py-7 px-4">
             <p className="font-display italic text-[#CE2B37] text-xl font-light">
@@ -128,20 +138,14 @@ export default function Menu() {
                   className="group relative bg-[#FFFEF5] hover:bg-[#FFFBF0] transition-colors duration-200 p-5 md:p-6"
                 >
                   <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#009246] scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-300" />
-
-                  <h3 
-                    className="font-display text-[1.25rem] font-semibold text-[#1C1A17] leading-snug pr-20 uppercase"
-                    style={{ fontWeight: 600 }}
-                  >
+                  <h3 className="font-display text-[1.25rem] font-semibold text-[#1C1A17] leading-snug pr-20 uppercase">
                     {item.name}
                   </h3>
-
                   {item.nameIt && (
                     <p className="font-display italic text-[0.88rem] font-light text-[#CE2B37] mt-0.5">
                       {item.nameIt}
                     </p>
                   )}
-
                   <div className="flex items-center gap-3 my-[0.6rem]">
                     <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" />
                     <span className="font-display text-[1.45rem] font-light text-[#1C1A17]">
@@ -149,11 +153,9 @@ export default function Menu() {
                     </span>
                     <span className="text-[11px] text-[#8C7E65] font-body">lei</span>
                   </div>
-
                   <p className="text-[13px] font-body font-light text-[#3D3428] leading-[1.7]">
                     {item.ingredients}
                   </p>
-
                   {item.weight && (
                     <p className="mt-3 text-[10px] tracking-[0.2em] uppercase font-body text-[#8C7E65]">
                       Gramaj: {item.weight}
