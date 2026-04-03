@@ -33,17 +33,18 @@ function buildCategories(items: { category: string }[]): { id: string; label: st
   const seen = new Set<string>();
   const cats: { id: string; label: string }[] = [];
   for (const item of items) {
-    if (item.category && !seen.has(item.category)) {
-      seen.add(item.category);
-      const label = LABEL_MAP[item.category.toLowerCase()] ?? (item.category.charAt(0).toUpperCase() + item.category.slice(1));
-      cats.push({ id: item.category, label });
+    const catId = item.category || 'pizza';
+    if (!seen.has(catId)) {
+      seen.add(catId);
+      const label = LABEL_MAP[catId.toLowerCase()] ?? (catId.charAt(0).toUpperCase() + catId.slice(1));
+      cats.push({ id: catId, label });
     }
   }
   return cats;
 }
 
 const BUCKET = 'menu-images';
-type Badge = 'new' | 'popular' | 'chef' | null;
+type Badge = 'new' | 'popular' | 'chef' | 'top' | 'hot' | 'picant' | null;
 
 interface MenuItem {
   id: number;
@@ -80,7 +81,7 @@ async function uploadImage(file: File): Promise<string | null> {
 }
 
 function ProductThumbnail({ url, name }: { url: string | null; name: string }) {
-  if (!url) return <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0"><svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M13.5 12h.008v.008H13.5V12z" /></svg></div>;
+  if (!url) return <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-300">🖼️</div>;
   return <img src={url} alt={name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-100" />;
 }
 
@@ -97,15 +98,14 @@ function ImageUploadCell({ item, onUploaded }: { item: MenuItem; onUploaded: (id
       onUploaded(item.id, url);
     }
     setUploading(false);
-    if (inputRef.current) inputRef.current.value = '';
   };
   return (
     <div className="flex items-center gap-2">
       <ProductThumbnail url={item.image_url} name={item.name} />
       <div className="relative">
         <input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" disabled={uploading} />
-        <button disabled={uploading} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-500 hover:border-[#c0392b] hover:text-[#c0392b]">
-          {uploading ? '...' : (item.image_url ? 'Schimbă' : 'Upload')}
+        <button disabled={uploading} className="text-[10px] px-2 py-1 rounded border border-gray-200 text-gray-500 bg-white">
+          {uploading ? '...' : 'Upload'}
         </button>
       </div>
     </div>
@@ -125,7 +125,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [modifiedIds, setModifiedIds] = useState<Set<number>>(new Set());
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
-  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProduct, setNewProduct] = useState<NewProduct>({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null });
@@ -135,259 +134,202 @@ export default function AdminPage() {
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 3000);
   };
 
-  const loadAllItems = useCallback(async () => {
+  const loadData = useCallback(async () => {
     const { data, error } = await supabase.from('menu_items').select('*').order('sort_order', { ascending: true });
     if (!error && data) {
-      const loaded = data.map(item => ({
-        ...item,
-        category: item.category_id || 'pizza'
-      })) as MenuItem[];
-      
+      const loaded = data.map(i => ({ ...i, category: i.category_id || 'pizza' })) as MenuItem[];
       setAllItems(loaded);
       const cats = buildCategories(loaded);
       setCategories(cats);
-      setActiveCategory((prev) => prev || cats[0]?.id || '');
+      if (!activeCategory) setActiveCategory(cats[0]?.id || 'pizza');
     }
-  }, []);
-
-  const loadCategoryItems = useCallback(async (category: string) => {
-    if (!category) return;
-    setLoading(true);
-    const { data, error } = await supabase.from('menu_items').select('*').eq('category_id', category).order('sort_order', { ascending: true });
-    if (!error && data) {
-      const loaded = data.map(item => ({
-        ...item,
-        category: item.category_id || 'pizza'
-      })) as MenuItem[];
-      setItems(loaded);
-    }
-    setLoading(false);
-  }, []);
+  }, [activeCategory]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { if (data.session) setSession(true); });
   }, []);
 
-  useEffect(() => { if (session) loadAllItems(); }, [session, loadAllItems]);
-  useEffect(() => { if (session && activeCategory) { loadCategoryItems(activeCategory); setModifiedIds(new Set()); } }, [session, activeCategory, loadCategoryItems]);
+  useEffect(() => { if (session) loadData(); }, [session, loadData]);
 
-  const categoryCounts = allItems.reduce((acc, item) => {
-    acc[item.category] = (acc[item.category] ?? 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  useEffect(() => {
+    if (session && activeCategory) {
+      setItems(allItems.filter(i => i.category === activeCategory));
+      setModifiedIds(new Set());
+    }
+  }, [activeCategory, allItems, session]);
 
   const handleLogin = async () => {
-    setAuthLoading(true); setAuthError('');
+    setAuthLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setAuthError('Email sau parolă incorectă.'); else setSession(true);
+    if (error) setAuthError('Eroare la logare.'); else setSession(true);
     setAuthLoading(false);
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); setSession(false); };
-  
-  const handleFieldChange = (id: number, field: keyof MenuItem, value: string | number | Badge) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
-    setModifiedIds((prev) => new Set(prev).add(id));
+  const handleFieldChange = (id: number, field: keyof MenuItem, value: any) => {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+    setModifiedIds(prev => new Set(prev).add(id));
   };
 
   const handleSave = async (item: MenuItem) => {
-    setSavingIds((prev) => new Set(prev).add(item.id));
-    const { error } = await supabase.from('menu_items').update({ 
-      name: item.name, 
-      price: item.price, 
-      ingredients: item.ingredients, 
-      weight: item.weight, 
+    setSavingIds(prev => new Set(prev).add(item.id));
+    const { error } = await supabase.from('menu_items').update({
+      name: item.name,
+      price: item.price,
+      ingredients: item.ingredients,
+      weight: item.weight,
       badge: item.badge,
       sort_order: item.sort_order
     }).eq('id', item.id);
-    
-    if (error) {
-      showToast('Eroare la salvare.', 'error');
-    } else { 
-      showToast(`"${item.name}" salvat!`); 
-      setModifiedIds((prev) => { const n = new Set(prev); n.delete(item.id); return n; }); 
-      loadAllItems(); 
+
+    if (error) showToast('Eroare la salvare', 'error');
+    else {
+      showToast(`Salvat: ${item.name}`);
+      setModifiedIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
+      loadData();
     }
-    setSavingIds((prev) => { const n = new Set(prev); n.delete(item.id); return n; });
+    setSavingIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
   };
 
   const handleDelete = async (item: MenuItem) => {
-    if (!window.confirm(`Ștergi "${item.name}"?`)) return;
-    setDeletingIds((prev) => new Set(prev).add(item.id));
+    if (!confirm(`Ștergi ${item.name}?`)) return;
     const { error } = await supabase.from('menu_items').delete().eq('id', item.id);
-    if (error) showToast('Eroare.', 'error'); else { showToast('Șters!'); setItems((prev) => prev.filter((p) => p.id !== item.id)); setAllItems((prev) => prev.filter((p) => p.id !== item.id)); }
-    setDeletingIds((prev) => { const n = new Set(prev); n.delete(item.id); return n; });
-  };
-
-  const handleImageUploaded = (id: number, url: string) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, image_url: url } : item)));
-    setAllItems((prev) => prev.map((item) => (item.id === id ? { ...item, image_url: url } : item)));
-    showToast('Imagine actualizată!');
+    if (error) showToast('Eroare la ștergere', 'error');
+    else { showToast('Șters!'); loadData(); }
   };
 
   const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.price) { showToast('Nume și preț obligatorii.', 'error'); return; }
+    if (!newProduct.name || !newProduct.price) return showToast('Nume și preț obligatorii', 'error');
     setAddingProduct(true);
-    let imageUrl: string | null = null;
-    if (newProductFile) imageUrl = await uploadImage(newProductFile);
-    
-    const maxSortOrder = allItems
-      .filter((i) => i.category === activeCategory)
-      .reduce((max, i) => Math.max(max, i.sort_order ?? 0), 0);
+    let url = null;
+    if (newProductFile) url = await uploadImage(newProductFile);
     
     const { error } = await supabase.from('menu_items').insert({
       name: newProduct.name,
-      description: newProduct.description || '',
       price: parseFloat(newProduct.price),
       category_id: activeCategory,
-      ingredients: newProduct.ingredients || '',
-      weight: newProduct.weight || '',
+      ingredients: newProduct.ingredients,
+      weight: newProduct.weight,
       badge: newProduct.badge,
-      sort_order: maxSortOrder + 10,
-      image_url: imageUrl,
+      image_url: url,
+      sort_order: 100
     });
 
-    if (error) {
-      showToast('Eroare la adăugare: ' + error.message, 'error');
-    } else { 
-      showToast('Produs adăugat cu succes!'); 
-      resetAddForm(); 
-      loadCategoryItems(activeCategory); 
-      loadAllItems(); 
+    if (error) showToast('Eroare: ' + error.message, 'error');
+    else {
+      showToast('Adăugat cu succes!');
+      setShowAddForm(false);
+      setNewProduct({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null });
+      setNewProductFile(null);
+      loadData();
     }
     setAddingProduct(false);
   };
 
-  const resetAddForm = () => { 
-    setShowAddForm(false); 
-    setNewProduct({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null }); 
-    setNewProductFile(null); 
-    if (newProductPreview) URL.revokeObjectURL(newProductPreview); 
-    setNewProductPreview(null); 
-  };
-
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-[#fdf8ee] flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
-          <div className="text-center mb-6"><h1 className="text-2xl font-bold">Napoletano Admin</h1></div>
-          {authError && <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">{authError}</div>}
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-gray-200 rounded-lg px-4 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#c0392b]/30" />
-          <input type="password" placeholder="Parolă" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} className="w-full border border-gray-200 rounded-lg px-4 py-2 mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#c0392b]/30" />
-          <button onClick={handleLogin} disabled={authLoading} className="w-full bg-[#c0392b] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[#a93226] disabled:opacity-60">{authLoading ? 'Se autentifică...' : 'Autentificare'}</button>
-        </div>
+  if (!session) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
+        <h1 className="text-xl font-bold mb-6 text-center">Napoletano Admin</h1>
+        {authError && <p className="text-red-500 text-sm mb-4">{authError}</p>}
+        <input type="email" placeholder="Email" className="w-full mb-3 p-2 border rounded" onChange={e => setEmail(e.target.value)} />
+        <input type="password" placeholder="Parolă" className="w-full mb-6 p-2 border rounded" onChange={e => setPassword(e.target.value)} />
+        <button onClick={handleLogin} className="w-full bg-red-600 text-white p-2 rounded font-bold">{authLoading ? '...' : 'Intră'}</button>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#fdf8ee]">
-      {toast && <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>{toast.message}</div>}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-        <div className="flex items-center gap-3"><div className="w-8 h-8 bg-[#c0392b] rounded-lg flex items-center justify-center"><span className="text-white text-xs font-bold">N</span></div><h1 className="text-lg font-semibold">Napoletano — Panou Admin</h1></div>
-        <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100">Deconectare</button>
+    <div className="min-h-screen bg-[#fdf8ee] pb-20">
+      {toast && <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded shadow-lg text-white ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.message}</div>}
+      
+      <header className="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-30">
+        <h1 className="font-bold text-red-600">NAPOLETANO ADMIN</h1>
+        <button onClick={() => supabase.auth.signOut().then(() => setSession(false))} className="text-xs text-gray-400">Ieșire</button>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 bg-[#c0392b]/10 text-[#c0392b] rounded-xl px-4 py-2"><span className="font-semibold text-sm">Total: <strong>{allItems.length}</strong> produse</span></div>
-            <div className="h-6 w-px bg-gray-200 hidden sm:block" />
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${activeCategory === cat.id ? 'bg-[#1a1a1a] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                  {cat.label} ({categoryCounts[cat.id] ?? 0})
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="max-w-6xl mx-auto p-4">
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
+          {categories.map(c => (
+            <button key={c.id} onClick={() => setActiveCategory(c.id)} className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap ${activeCategory === c.id ? 'bg-red-600 text-white' : 'bg-white border'}`}>
+              {c.label}
+            </button>
+          ))}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div><h2 className="font-semibold">{categories.find((c) => c.id === activeCategory)?.label}</h2><p className="text-xs text-gray-400">{items.length} produse</p></div>
-            <button onClick={() => setShowAddForm(!showAddForm)} className="bg-[#1a1a1a] text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800">Produs Nou</button>
+        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+          <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+            <span className="font-bold text-sm uppercase">{activeCategory}</span>
+            <button onClick={() => setShowAddForm(!showAddForm)} className="bg-black text-white text-xs px-4 py-2 rounded-lg"> + Produs Nou</button>
           </div>
 
           {showAddForm && (
-            <div className="px-5 py-5 bg-amber-50 border-b border-amber-100">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                <input placeholder="Nume produs *" value={newProduct.name} onChange={(e) => setNewProduct((p) => ({ ...p, name: e.target.value }))} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c0392b]/30 col-span-2 md:col-span-1" />
-                <input placeholder="Preț (lei) *" type="number" value={newProduct.price} onChange={(e) => setNewProduct((p) => ({ ...p, price: e.target.value }))} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c0392b]/30" />
-                <input placeholder="Gramaj" value={newProduct.weight} onChange={(e) => setNewProduct((p) => ({ ...p, weight: e.target.value }))} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c0392b]/30" />
-                <input placeholder="Ingrediente" value={newProduct.ingredients} onChange={(e) => setNewProduct((p) => ({ ...p, ingredients: e.target.value }))} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c0392b]/30 col-span-2" />
-                <select value={newProduct.badge ?? ''} onChange={(e) => setNewProduct((p) => ({ ...p, badge: (e.target.value as Badge) || null }))} className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                  <option value="">Fără badge</option><option value="new">🆕 New</option><option value="popular">🔥 Popular</option><option value="chef">👨‍🍳 Chef</option>
+            <div className="p-4 bg-orange-50 border-b space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <input placeholder="Nume *" className="p-2 border rounded text-sm" value={newProduct.name} onChange={e => setNewProduct(p => ({ ...p, name: e.target.value }))} />
+                <input placeholder="Preț *" type="number" className="p-2 border rounded text-sm" value={newProduct.price} onChange={e => setNewProduct(p => ({ ...p, price: e.target.value }))} />
+                <input placeholder="Gramaj" className="p-2 border rounded text-sm" value={newProduct.weight} onChange={e => setNewProduct(p => ({ ...p, weight: e.target.value }))} />
+                <select className="p-2 border rounded text-sm" onChange={e => setNewProduct(p => ({ ...p, badge: (e.target.value as Badge) || null }))}>
+                  <option value="">Fără Badge</option>
+                  <option value="picant">🌶️ Picant</option>
+                  <option value="hot">🔥 Hot</option>
+                  <option value="top">🔝 Top</option>
+                  <option value="new">🆕 New</option>
+                  <option value="popular">Popular</option>
                 </select>
               </div>
+              <input placeholder="Ingrediente" className="w-full p-2 border rounded text-sm" value={newProduct.ingredients} onChange={e => setNewProduct(p => ({ ...p, ingredients: e.target.value }))} />
               
-              {/* REPARATIE AICI: Am adaugat 'relative' si 'w-fit' */}
-              <div className="flex items-center gap-4 mb-4">
-                <label className="relative border border-amber-300 text-amber-700 bg-white px-3 py-2 rounded-lg text-sm cursor-pointer font-medium hover:bg-amber-50 transition-colors w-fit overflow-hidden">
-                  {newProductFile ? newProductFile.name : 'Alege imaginea (Opțional)'}
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={(e) => {
-                      const f = e.target.files?.[0] ?? null; setNewProductFile(f);
-                      if (f) setNewProductPreview(URL.createObjectURL(f));
-                    }} 
-                    className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-                  />
+              <div className="flex items-center gap-4">
+                <label className="relative overflow-hidden bg-white border px-4 py-2 rounded text-xs font-bold cursor-pointer hover:bg-gray-50">
+                  {newProductFile ? '✅ Foto selectată' : '📸 Alege Foto (Opțional)'}
+                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => setNewProductFile(e.target.files?.[0] || null)} />
                 </label>
-                {newProductPreview && <img src={newProductPreview} className="w-12 h-12 rounded object-cover border border-amber-200" />}
-              </div>
-
-              <div className="flex gap-2">
-                <button onClick={handleAddProduct} disabled={addingProduct} className="bg-[#c0392b] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#a93226]">{addingProduct ? 'Se adaugă...' : 'Salvează Produs'}</button>
-                <button onClick={resetAddForm} className="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Anulează</button>
+                <button onClick={handleAddProduct} disabled={addingProduct} className="bg-red-600 text-white px-6 py-2 rounded text-xs font-bold uppercase">{addingProduct ? '...' : 'Salvează'}</button>
               </div>
             </div>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase">
-                <tr>
-                  <th className="px-4 py-3 w-32">Imagine</th>
-                  <th className="px-2 py-3 w-16 text-center">Nr.</th>
-                  <th className="px-4 py-3">Produs</th>
-                  <th className="px-4 py-3 w-28">Preț</th>
-                  <th className="px-4 py-3">Ingrediente</th>
-                  <th className="px-4 py-3 w-28 text-center">Acțiuni</th>
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 text-[10px] uppercase text-gray-400">
+              <tr>
+                <th className="p-3">Foto</th>
+                <th className="p-3">Produs / Ingrediente</th>
+                <th className="p-3 w-20">Preț</th>
+                <th className="p-3 w-16">Sort</th>
+                <th className="p-3 w-20 text-center">Acțiune</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {items.map(item => (
+                <tr key={item.id} className={modifiedIds.has(item.id) ? 'bg-yellow-50' : ''}>
+                  <td className="p-3"><ImageUploadCell item={item} onUploaded={loadData} /></td>
+                  <td className="p-3">
+                    <input className="font-bold w-full bg-transparent" value={item.name} onChange={e => handleFieldChange(item.id, 'name', e.target.value)} />
+                    <input className="text-xs text-gray-500 w-full bg-transparent" value={item.ingredients} onChange={e => handleFieldChange(item.id, 'ingredients', e.target.value)} />
+                    <div className="flex gap-2 mt-1">
+                       <select className="text-[10px] border rounded" value={item.badge || ''} onChange={e => handleFieldChange(item.id, 'badge', e.target.value || null)}>
+                         <option value="">Fără</option>
+                         <option value="picant">🌶️ Picant</option>
+                         <option value="hot">🔥 Hot</option>
+                         <option value="top">🔝 Top</option>
+                       </select>
+                       <span className="text-[10px] text-gray-300 italic">{item.weight}</span>
+                    </div>
+                  </td>
+                  <td className="p-3"><input type="number" className="w-full font-bold text-red-600 bg-transparent" value={item.price} onChange={e => handleFieldChange(item.id, 'price', parseFloat(e.target.value))} /></td>
+                  <td className="p-3"><input type="number" className="w-full text-center bg-gray-50 rounded" value={item.sort_order} onChange={e => handleFieldChange(item.id, 'sort_order', parseInt(e.target.value))} /></td>
+                  <td className="p-3">
+                    <div className="flex flex-col gap-1">
+                      {modifiedIds.has(item.id) && <button onClick={() => handleSave(item)} className="bg-green-600 text-white text-[10px] py-1 rounded font-bold uppercase">OK</button>}
+                      <button onClick={() => handleDelete(item)} className="text-[10px] text-gray-300 hover:text-red-600 uppercase">Șterge</button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {items.map((item) => (
-                  <tr key={item.id} className={`group transition-colors ${modifiedIds.has(item.id) ? 'bg-amber-50/60' : 'hover:bg-gray-50/60'}`}>
-                    <td className="px-4 py-2.5"><ImageUploadCell item={item} onUploaded={handleImageUploaded} /></td>
-                    <td className="px-2 py-2.5">
-                      <input 
-                        type="number" 
-                        value={item.sort_order || 0} 
-                        onChange={(e) => handleFieldChange(item.id, 'sort_order', parseInt(e.target.value))}
-                        className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full text-center font-bold text-gray-700 focus:bg-white focus:ring-1 focus:ring-[#c0392b]/30 outline-none"
-                      />
-                    </td>
-                    <td className="px-4 py-2.5"><input value={item.name} onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)} className="bg-transparent w-full font-medium focus:outline-none" /></td>
-                    <td className="px-4 py-2.5"><input type="number" value={item.price} onChange={(e) => handleFieldChange(item.id, 'price', parseFloat(e.target.value))} className="bg-transparent w-full text-[#c0392b] font-semibold focus:outline-none" /></td>
-                    <td className="px-4 py-2.5"><input value={item.ingredients ?? ''} onChange={(e) => handleFieldChange(item.id, 'ingredients', e.target.value)} className="bg-transparent w-full text-gray-600 focus:outline-none" /></td>
-                    <td className="px-4 py-2.5">
-                      <div className="flex gap-1 justify-center">
-                        {modifiedIds.has(item.id) && (
-                          <button onClick={() => handleSave(item)} className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-green-700">OK</button>
-                        )}
-                        <button onClick={() => handleDelete(item)} className="text-gray-400 hover:text-red-600 text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">Șterge</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
