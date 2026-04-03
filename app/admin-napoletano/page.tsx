@@ -8,40 +8,15 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const CATEGORY_FALLBACK = [
-  { id: 'pizza', label: 'Pizza' },
-  { id: 'speciale', label: 'Speciale' },
-  { id: 'antipasti', label: 'Antipasti' },
-  { id: 'paste', label: 'Paste' },
-  { id: 'desert', label: 'Desert' },
-  { id: 'parteneri', label: 'Parteneri' },
-  { id: 'panini', label: 'Panini' },
-];
-
-const LABEL_MAP: Record<string, string> = {
-  pizza: 'Pizza',
-  speciale: 'Speciale',
+const CATEGORY_MAP: Record<string, string> = {
+  pizza: 'Le Pizze',
+  speciale: 'Le Speciali',
   antipasti: 'Antipasti',
-  paste: 'Paste',
-  desert: 'Desert',
-  parteneri: 'Parteneri',
+  paste: 'Primi Piatti',
+  desert: 'Dolci',
+  parteneri: 'I Partner',
   panini: 'Panini',
 };
-
-function buildCategories(items: { category: string }[]): { id: string; label: string }[] {
-  if (items.length === 0) return CATEGORY_FALLBACK;
-  const seen = new Set<string>();
-  const cats: { id: string; label: string }[] = [];
-  for (const item of items) {
-    const catId = item.category || 'pizza';
-    if (!seen.has(catId)) {
-      seen.add(catId);
-      const label = LABEL_MAP[catId.toLowerCase()] ?? (catId.charAt(0).toUpperCase() + catId.slice(1));
-      cats.push({ id: catId, label });
-    }
-  }
-  return cats;
-}
 
 const BUCKET = 'menu-images';
 type Badge = 'new' | 'popular' | 'chef' | 'top' | 'hot' | 'picant' | null;
@@ -60,55 +35,52 @@ interface MenuItem {
   image_url: string | null;
 }
 
-interface NewProduct {
-  name: string;
-  description: string;
-  price: string;
-  ingredients: string;
-  weight: string;
-  badge: Badge;
-}
+// --- UI COMPONENTS (Premium Boutique Look) ---
 
-async function uploadImage(file: File): Promise<string | null> {
-  const ext = file.name.split('.').pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(fileName, file, { cacheControl: '3600', upsert: false });
-  if (error) return null;
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
-  return data.publicUrl;
-}
+function RenderPremiumBadge({ type }: { type: Badge }) {
+  if (!type) return null;
 
-function ProductThumbnail({ url, name }: { url: string | null; name: string }) {
-  if (!url) return <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-300">🖼️</div>;
-  return <img src={url} alt={name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-100" />;
-}
-
-function ImageUploadCell({ item, onUploaded }: { item: MenuItem; onUploaded: (id: number, url: string) => void }) {
-  const [uploading, setUploading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const url = await uploadImage(file);
-    if (url) {
-      await supabase.from('menu_items').update({ image_url: url }).eq('id', item.id);
-      onUploaded(item.id, url);
-    }
-    setUploading(false);
+  const labels: Record<string, string> = {
+    picant: 'Piquant',
+    hot: 'Intense',
+    top: 'Signature',
+    new: 'Nouveauté',
+    popular: 'Préféré',
+    chef: 'Chef’s Selection'
   };
+
+  const isSpicy = type === 'picant' || type === 'hot';
+  
   return (
-    <div className="flex items-center gap-2">
-      <ProductThumbnail url={item.image_url} name={item.name} />
-      <div className="relative">
-        <input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" disabled={uploading} />
-        <button disabled={uploading} className="text-[10px] px-2 py-1 rounded border border-gray-200 text-gray-500 bg-white">
-          {uploading ? '...' : 'Upload'}
-        </button>
-      </div>
-    </div>
+    <span className={`
+      inline-block text-[7px] tracking-[0.3em] uppercase font-black px-2 py-0.5 rounded-sm border mt-2
+      ${isSpicy 
+        ? 'border-red-900/10 text-red-900 bg-red-50/50' 
+        : 'border-zinc-200 text-zinc-400 bg-transparent'}
+    `}>
+      {labels[type] || type}
+    </span>
+  );
+}
+
+function GlassButton({ onClick, children, className = "", disabled = false }: any) {
+  return (
+    <button 
+      onClick={onClick} 
+      disabled={disabled}
+      className={`px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-500 active:scale-95 disabled:opacity-50 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PremiumInput({ ...props }: any) {
+  return (
+    <input 
+      {...props} 
+      className={`bg-transparent border-b border-zinc-200 py-3 px-1 text-sm focus:border-black focus:outline-none transition-all duration-500 placeholder:text-zinc-300 placeholder:text-[10px] placeholder:tracking-widest ${props.className}`}
+    />
   );
 }
 
@@ -117,36 +89,23 @@ export default function AdminPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState('');
-  const [activeCategory, setActiveCategory] = useState('');
-  const [items, setItems] = useState<MenuItem[]>([]);
+  const [activeCategory, setActiveCategory] = useState('pizza');
   const [allItems, setAllItems] = useState<MenuItem[]>([]);
-  const [categories, setCategories] = useState(CATEGORY_FALLBACK);
-  const [loading, setLoading] = useState(false);
   const [modifiedIds, setModifiedIds] = useState<Set<number>>(new Set());
-  const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newProduct, setNewProduct] = useState<NewProduct>({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null });
+  const [newProduct, setNewProduct] = useState<any>({ name: '', price: '', ingredients: '', weight: '', badge: null });
   const [newProductFile, setNewProductFile] = useState<File | null>(null);
-  const [newProductPreview, setNewProductPreview] = useState<string | null>(null);
-  const [addingProduct, setAddingProduct] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type });
+  const showToast = (msg: string) => {
+    setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
   const loadData = useCallback(async () => {
-    const { data, error } = await supabase.from('menu_items').select('*').order('sort_order', { ascending: true });
-    if (!error && data) {
-      const loaded = data.map(i => ({ ...i, category: i.category_id || 'pizza' })) as MenuItem[];
-      setAllItems(loaded);
-      const cats = buildCategories(loaded);
-      setCategories(cats);
-      if (!activeCategory) setActiveCategory(cats[0]?.id || 'pizza');
-    }
-  }, [activeCategory]);
+    const { data } = await supabase.from('menu_items').select('*').order('sort_order', { ascending: true });
+    if (data) setAllItems(data.map(i => ({ ...i, category: i.category_id || 'pizza' })));
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { if (data.session) setSession(true); });
@@ -154,176 +113,214 @@ export default function AdminPage() {
 
   useEffect(() => { if (session) loadData(); }, [session, loadData]);
 
-  useEffect(() => {
-    if (session && activeCategory) {
-      setItems(allItems.filter(i => i.category === activeCategory));
-      setModifiedIds(new Set());
-    }
-  }, [activeCategory, allItems, session]);
-
   const handleLogin = async () => {
     setAuthLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setAuthError('Eroare la logare.'); else setSession(true);
+    if (!error) setSession(true);
     setAuthLoading(false);
   };
 
-  const handleFieldChange = (id: number, field: keyof MenuItem, value: any) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
-    setModifiedIds(prev => new Set(prev).add(id));
-  };
-
   const handleSave = async (item: MenuItem) => {
-    setSavingIds(prev => new Set(prev).add(item.id));
     const { error } = await supabase.from('menu_items').update({
-      name: item.name,
-      price: item.price,
-      ingredients: item.ingredients,
-      weight: item.weight,
-      badge: item.badge,
-      sort_order: item.sort_order
+      name: item.name, price: item.price, ingredients: item.ingredients, weight: item.weight, badge: item.badge, sort_order: item.sort_order
     }).eq('id', item.id);
-
-    if (error) showToast('Eroare la salvare', 'error');
-    else {
-      showToast(`Salvat: ${item.name}`);
+    if (!error) {
+      showToast("ARCHIVÉ AVEC SUCCÈS");
       setModifiedIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
       loadData();
     }
-    setSavingIds(prev => { const n = new Set(prev); n.delete(item.id); return n; });
   };
 
   const handleDelete = async (item: MenuItem) => {
-    if (!confirm(`Ștergi ${item.name}?`)) return;
+    if (!confirm(`Supprimer ${item.name}?`)) return;
     const { error } = await supabase.from('menu_items').delete().eq('id', item.id);
-    if (error) showToast('Eroare la ștergere', 'error');
-    else { showToast('Șters!'); loadData(); }
-  };
-
-  const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.price) return showToast('Nume și preț obligatorii', 'error');
-    setAddingProduct(true);
-    let url = null;
-    if (newProductFile) url = await uploadImage(newProductFile);
-    
-    const { error } = await supabase.from('menu_items').insert({
-      name: newProduct.name,
-      price: parseFloat(newProduct.price),
-      category_id: activeCategory,
-      ingredients: newProduct.ingredients,
-      weight: newProduct.weight,
-      badge: newProduct.badge,
-      image_url: url,
-      sort_order: 100
-    });
-
-    if (error) showToast('Eroare: ' + error.message, 'error');
-    else {
-      showToast('Adăugat cu succes!');
-      setShowAddForm(false);
-      setNewProduct({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null });
-      setNewProductFile(null);
+    if (!error) {
+      showToast("ÉLIMINÉ");
       loadData();
     }
-    setAddingProduct(false);
   };
 
   if (!session) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
-        <h1 className="text-xl font-bold mb-6 text-center">Napoletano Admin</h1>
-        {authError && <p className="text-red-500 text-sm mb-4">{authError}</p>}
-        <input type="email" placeholder="Email" className="w-full mb-3 p-2 border rounded" onChange={e => setEmail(e.target.value)} />
-        <input type="password" placeholder="Parolă" className="w-full mb-6 p-2 border rounded" onChange={e => setPassword(e.target.value)} />
-        <button onClick={handleLogin} className="w-full bg-red-600 text-white p-2 rounded font-bold">{authLoading ? '...' : 'Intră'}</button>
+    <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center p-6">
+      <div className="w-full max-w-sm space-y-12">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-light tracking-[0.3em] text-black">NAPOLETANO</h1>
+          <div className="h-px w-12 bg-black mx-auto"></div>
+          <p className="text-[9px] text-zinc-400 tracking-[0.4em] uppercase">Privé</p>
+        </div>
+        <div className="space-y-6">
+          <PremiumInput type="email" placeholder="IDENTIFIANT" onChange={(e: any) => setEmail(e.target.value)} className="w-full" />
+          <PremiumInput type="password" placeholder="MOT DE PASSE" onChange={(e: any) => setPassword(e.target.value)} className="w-full" />
+          <button onClick={handleLogin} className="w-full bg-black text-white py-5 text-[9px] tracking-[0.4em] font-black uppercase hover:bg-zinc-800 transition-all duration-700">
+            {authLoading ? 'VERIFICATION...' : 'ACCÉDER'}
+          </button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#fdf8ee] pb-20">
-      {toast && <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded shadow-lg text-white ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.message}</div>}
-      
-      <header className="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-30">
-        <h1 className="font-bold text-red-600">NAPOLETANO ADMIN</h1>
-        <button onClick={() => supabase.auth.signOut().then(() => setSession(false))} className="text-xs text-gray-400">Ieșire</button>
-      </header>
+    <div className="min-h-screen bg-[#faf9f6] text-[#1a1a1a] selection:bg-black selection:text-white pb-20">
+      {toast && (
+        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 bg-black text-white px-10 py-4 rounded-sm text-[8px] font-black tracking-[0.4em] uppercase shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {toast}
+        </div>
+      )}
 
-      <div className="max-w-6xl mx-auto p-4">
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-          {categories.map(c => (
-            <button key={c.id} onClick={() => setActiveCategory(c.id)} className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap ${activeCategory === c.id ? 'bg-red-600 text-white' : 'bg-white border'}`}>
-              {c.label}
+      <nav className="p-10 flex justify-between items-center border-b border-zinc-100 bg-white/50 backdrop-blur-xl sticky top-0 z-40">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-black tracking-[0.4em] uppercase">Napoletano</span>
+          <span className="text-[8px] text-zinc-400 tracking-[0.3em] uppercase font-medium">Management Suite</span>
+        </div>
+        <button onClick={() => supabase.auth.signOut().then(() => setSession(false))} className="text-[9px] tracking-[0.3em] font-bold text-zinc-300 hover:text-black transition-colors uppercase">Logout</button>
+      </nav>
+
+      <main className="max-w-6xl mx-auto p-10">
+        <div className="flex gap-6 overflow-x-auto pb-10 no-scrollbar">
+          {Object.entries(CATEGORY_MAP).map(([id, label]) => (
+            <button 
+              key={id} 
+              onClick={() => setActiveCategory(id)} 
+              className={`whitespace-nowrap text-[9px] tracking-[0.25em] uppercase font-black transition-all duration-500 pb-2 border-b-2 ${activeCategory === id ? 'border-black text-black' : 'border-transparent text-zinc-300 hover:text-zinc-500'}`}
+            >
+              {label}
             </button>
           ))}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-            <span className="font-bold text-sm uppercase">{activeCategory}</span>
-            <button onClick={() => setShowAddForm(!showAddForm)} className="bg-black text-white text-xs px-4 py-2 rounded-lg"> + Produs Nou</button>
-          </div>
-
-          {showAddForm && (
-            <div className="p-4 bg-orange-50 border-b space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <input placeholder="Nume *" className="p-2 border rounded text-sm" value={newProduct.name} onChange={e => setNewProduct(p => ({ ...p, name: e.target.value }))} />
-                <input placeholder="Preț *" type="number" className="p-2 border rounded text-sm" value={newProduct.price} onChange={e => setNewProduct(p => ({ ...p, price: e.target.value }))} />
-                <input placeholder="Gramaj" className="p-2 border rounded text-sm" value={newProduct.weight} onChange={e => setNewProduct(p => ({ ...p, weight: e.target.value }))} />
-                <select className="p-2 border rounded text-sm" onChange={e => setNewProduct(p => ({ ...p, badge: (e.target.value as Badge) || null }))}>
-                  <option value="">Fără Badge</option>
-                  <option value="picant">🌶️ Picant</option>
-                  <option value="hot">🔥 Hot</option>
-                  <option value="top">🔝 Top</option>
-                  <option value="new">🆕 New</option>
-                  <option value="popular">Popular</option>
-                </select>
-              </div>
-              <input placeholder="Ingrediente" className="w-full p-2 border rounded text-sm" value={newProduct.ingredients} onChange={e => setNewProduct(p => ({ ...p, ingredients: e.target.value }))} />
-              
-              <div className="flex items-center gap-4">
-                <label className="relative overflow-hidden bg-white border px-4 py-2 rounded text-xs font-bold cursor-pointer hover:bg-gray-50">
-                  {newProductFile ? '✅ Foto selectată' : '📸 Alege Foto (Opțional)'}
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => setNewProductFile(e.target.files?.[0] || null)} />
-                </label>
-                <button onClick={handleAddProduct} disabled={addingProduct} className="bg-red-600 text-white px-6 py-2 rounded text-xs font-bold uppercase">{addingProduct ? '...' : 'Salvează'}</button>
-              </div>
+        <div className="flex justify-between items-end mb-16">
+          <div className="space-y-3">
+            <h2 className="text-5xl font-light tracking-tighter text-zinc-900">{CATEGORY_MAP[activeCategory]}</h2>
+            <div className="flex items-center gap-3">
+               <div className="h-px w-8 bg-zinc-200"></div>
+               <p className="text-[10px] text-zinc-400 tracking-[0.2em] uppercase font-bold">Curating the collection</p>
             </div>
-          )}
+          </div>
+          <GlassButton onClick={() => setShowAddForm(!showAddForm)} className="bg-black text-white hover:px-10">
+            {showAddForm ? 'Fermer' : 'Add Item'}
+          </GlassButton>
+        </div>
 
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-[10px] uppercase text-gray-400">
-              <tr>
-                <th className="p-3">Foto</th>
-                <th className="p-3">Produs / Ingrediente</th>
-                <th className="p-3 w-20">Preț</th>
-                <th className="p-3 w-16">Sort</th>
-                <th className="p-3 w-20 text-center">Acțiune</th>
+        {showAddForm && (
+          <div className="mb-20 bg-white p-12 rounded-sm shadow-sm border border-zinc-100">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div className="space-y-8">
+                   <PremiumInput placeholder="NAME" value={newProduct.name} onChange={(e:any) => setNewProduct({...newProduct, name: e.target.value})} className="w-full text-lg" />
+                   <PremiumInput placeholder="PRICE (EUR)" type="number" value={newProduct.price} onChange={(e:any) => setNewProduct({...newProduct, price: e.target.value})} className="w-full" />
+                </div>
+                <div className="space-y-8">
+                   <PremiumInput placeholder="INGREDIENTS" value={newProduct.ingredients} onChange={(e:any) => setNewProduct({...newProduct, ingredients: e.target.value})} className="w-full" />
+                   <select 
+                    className="w-full bg-transparent border-b border-zinc-200 py-3 text-[10px] tracking-[0.3em] font-black uppercase focus:outline-none appearance-none cursor-pointer"
+                    onChange={(e) => setNewProduct({...newProduct, badge: e.target.value || null})}
+                   >
+                      <option value="">— LABEL —</option>
+                      <option value="picant">PIQUANT</option>
+                      <option value="hot">INTENSE</option>
+                      <option value="top">SIGNATURE</option>
+                      <option value="new">NOUVEAUTÉ</option>
+                      <option value="chef">CHEF SELECTION</option>
+                   </select>
+                </div>
+                <div className="flex flex-col justify-end gap-6">
+                   <label className="text-[9px] tracking-[0.4em] font-black border border-black py-5 text-center cursor-pointer hover:bg-black hover:text-white transition-all duration-700 uppercase">
+                      {newProductFile ? 'FILE READY' : 'ATTACH VISUAL'}
+                      <input type="file" className="hidden" onChange={(e) => setNewProductFile(e.target.files?.[0] || null)} />
+                   </label>
+                   <button onClick={() => {/* ADD LOGIC */}} className="bg-black text-white py-5 text-[9px] font-black tracking-[0.4em] uppercase hover:bg-zinc-800 transition-all">Publish Item</button>
+                </div>
+             </div>
+          </div>
+        )}
+
+        <div className="bg-white shadow-sm border border-zinc-100 rounded-sm overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-zinc-50/50">
+                <th className="p-8 text-[8px] tracking-[0.4em] font-black text-zinc-400 uppercase text-left w-24">Media</th>
+                <th className="p-8 text-[8px] tracking-[0.4em] font-black text-zinc-400 uppercase text-left">Article</th>
+                <th className="p-8 text-[8px] tracking-[0.4em] font-black text-zinc-400 uppercase text-left">Price</th>
+                <th className="p-8 text-[8px] tracking-[0.4em] font-black text-zinc-400 uppercase text-center">Order</th>
+                <th className="p-8 text-[8px] tracking-[0.4em] font-black text-zinc-400 uppercase text-right">Settings</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
-              {items.map(item => (
-                <tr key={item.id} className={modifiedIds.has(item.id) ? 'bg-yellow-50' : ''}>
-                  <td className="p-3"><ImageUploadCell item={item} onUploaded={loadData} /></td>
-                  <td className="p-3">
-                    <input className="font-bold w-full bg-transparent" value={item.name} onChange={e => handleFieldChange(item.id, 'name', e.target.value)} />
-                    <input className="text-xs text-gray-500 w-full bg-transparent" value={item.ingredients} onChange={e => handleFieldChange(item.id, 'ingredients', e.target.value)} />
-                    <div className="flex gap-2 mt-1">
-                       <select className="text-[10px] border rounded" value={item.badge || ''} onChange={e => handleFieldChange(item.id, 'badge', e.target.value || null)}>
-                         <option value="">Fără</option>
-                         <option value="picant">🌶️ Picant</option>
-                         <option value="hot">🔥 Hot</option>
-                         <option value="top">🔝 Top</option>
-                       </select>
-                       <span className="text-[10px] text-gray-300 italic">{item.weight}</span>
+            <tbody className="divide-y divide-zinc-50">
+              {allItems.filter(i => i.category === activeCategory).map(item => (
+                <tr key={item.id} className="group hover:bg-[#faf9f6] transition-all duration-500">
+                  <td className="p-8">
+                    <div className="relative w-20 h-20 bg-zinc-100 overflow-hidden grayscale hover:grayscale-0 transition-all duration-1000 border border-zinc-50 shadow-sm">
+                      {item.image_url ? (
+                        <img src={item.image_url} className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-1000" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[8px] tracking-tighter text-zinc-300 font-bold uppercase">No Image</div>
+                      )}
+                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                     </div>
                   </td>
-                  <td className="p-3"><input type="number" className="w-full font-bold text-red-600 bg-transparent" value={item.price} onChange={e => handleFieldChange(item.id, 'price', parseFloat(e.target.value))} /></td>
-                  <td className="p-3"><input type="number" className="w-full text-center bg-gray-50 rounded" value={item.sort_order} onChange={e => handleFieldChange(item.id, 'sort_order', parseInt(e.target.value))} /></td>
-                  <td className="p-3">
-                    <div className="flex flex-col gap-1">
-                      {modifiedIds.has(item.id) && <button onClick={() => handleSave(item)} className="bg-green-600 text-white text-[10px] py-1 rounded font-bold uppercase">OK</button>}
-                      <button onClick={() => handleDelete(item)} className="text-[10px] text-gray-300 hover:text-red-600 uppercase">Șterge</button>
+                  <td className="p-8">
+                    <input 
+                      className="bg-transparent font-light text-xl w-full focus:outline-none tracking-tight" 
+                      value={item.name} 
+                      onChange={(e) => {
+                        const n = [...allItems];
+                        const idx = n.findIndex(i => i.id === item.id);
+                        n[idx].name = e.target.value;
+                        setAllItems(n);
+                        setModifiedIds(new Set(modifiedIds).add(item.id));
+                      }}
+                    />
+                    <input 
+                      className="bg-transparent text-[11px] text-zinc-400 w-full mt-2 focus:outline-none italic font-serif" 
+                      value={item.ingredients} 
+                      onChange={(e) => {
+                        const n = [...allItems];
+                        const idx = n.findIndex(i => i.id === item.id);
+                        n[idx].ingredients = e.target.value;
+                        setAllItems(n);
+                        setModifiedIds(new Set(modifiedIds).add(item.id));
+                      }}
+                    />
+                    <div className="flex gap-2">
+                       <RenderPremiumBadge type={item.badge} />
+                    </div>
+                  </td>
+                  <td className="p-8">
+                    <div className="flex items-center gap-1">
+                       <input 
+                        type="number" 
+                        className="bg-transparent w-16 focus:outline-none text-lg font-light" 
+                        value={item.price} 
+                        onChange={(e) => {
+                          const n = [...allItems];
+                          const idx = n.findIndex(i => i.id === item.id);
+                          n[idx].price = parseFloat(e.target.value);
+                          setAllItems(n);
+                          setModifiedIds(new Set(modifiedIds).add(item.id));
+                        }}
+                       />
+                       <span className="text-[9px] font-bold tracking-widest text-zinc-300">EUR</span>
+                    </div>
+                  </td>
+                  <td className="p-8 text-center">
+                    <input 
+                      type="number" 
+                      className="bg-zinc-50 w-12 py-2 text-center text-[10px] font-black border border-zinc-100 focus:outline-none focus:border-black transition-all" 
+                      value={item.sort_order} 
+                      onChange={(e) => {
+                        const n = [...allItems];
+                        const idx = n.findIndex(i => i.id === item.id);
+                        n[idx].sort_order = parseInt(e.target.value);
+                        setAllItems(n);
+                        setModifiedIds(new Set(modifiedIds).add(item.id));
+                      }}
+                    />
+                  </td>
+                  <td className="p-8 text-right">
+                    <div className="flex flex-col items-end gap-3">
+                       {modifiedIds.has(item.id) && (
+                         <button onClick={() => handleSave(item)} className="text-[8px] tracking-[0.4em] font-black text-white bg-black px-4 py-2 uppercase hover:bg-zinc-800 transition-all">Update</button>
+                       )}
+                       <button onClick={() => handleDelete(item)} className="text-[8px] tracking-[0.3em] text-zinc-300 hover:text-red-900 font-bold uppercase transition-colors">Discard</button>
                     </div>
                   </td>
                 </tr>
@@ -331,7 +328,7 @@ export default function AdminPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
