@@ -103,7 +103,7 @@ function ImageUploadCell({ item, onUploaded }: { item: MenuItem; onUploaded: (id
     <div className="flex items-center gap-2">
       <ProductThumbnail url={item.image_url} name={item.name} />
       <div className="relative">
-        <input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" disabled={uploading} />
+        <input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" disabled={uploading} />
         <button disabled={uploading} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-500 hover:border-[#c0392b] hover:text-[#c0392b]">
           {uploading ? '...' : (item.image_url ? 'Schimbă' : 'Upload')}
         </button>
@@ -201,7 +201,7 @@ export default function AdminPage() {
       ingredients: item.ingredients, 
       weight: item.weight, 
       badge: item.badge,
-      sort_order: item.sort_order // Am adaugat salvarea ordinii
+      sort_order: item.sort_order
     }).eq('id', item.id);
     
     if (error) {
@@ -233,25 +233,41 @@ export default function AdminPage() {
     setAddingProduct(true);
     let imageUrl: string | null = null;
     if (newProductFile) imageUrl = await uploadImage(newProductFile);
-    const maxSortOrder = allItems.filter((i) => i.category === activeCategory).reduce((max, i) => Math.max(max, i.sort_order ?? 0), 0);
+    
+    const maxSortOrder = allItems
+      .filter((i) => i.category === activeCategory)
+      .reduce((max, i) => Math.max(max, i.sort_order ?? 0), 0);
     
     const { error } = await supabase.from('menu_items').insert({
       name: newProduct.name,
-      description: newProduct.description,
+      description: newProduct.description || '',
       price: parseFloat(newProduct.price),
       category_id: activeCategory,
-      ingredients: newProduct.ingredients,
-      weight: newProduct.weight,
+      ingredients: newProduct.ingredients || '',
+      weight: newProduct.weight || '',
       badge: newProduct.badge,
-      sort_order: maxSortOrder + 10, // Incrementam cu 10 pentru flexibilitate
+      sort_order: maxSortOrder + 10,
       image_url: imageUrl,
     });
 
-    if (error) showToast('Eroare la adăugare.', 'error'); else { showToast('Adăugat!'); resetAddForm(); loadCategoryItems(activeCategory); loadAllItems(); }
+    if (error) {
+      showToast('Eroare la adăugare: ' + error.message, 'error');
+    } else { 
+      showToast('Produs adăugat cu succes!'); 
+      resetAddForm(); 
+      loadCategoryItems(activeCategory); 
+      loadAllItems(); 
+    }
     setAddingProduct(false);
   };
 
-  const resetAddForm = () => { setShowAddForm(false); setNewProduct({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null }); setNewProductFile(null); if (newProductPreview) URL.revokeObjectURL(newProductPreview); setNewProductPreview(null); };
+  const resetAddForm = () => { 
+    setShowAddForm(false); 
+    setNewProduct({ name: '', description: '', price: '', ingredients: '', weight: '', badge: null }); 
+    setNewProductFile(null); 
+    if (newProductPreview) URL.revokeObjectURL(newProductPreview); 
+    setNewProductPreview(null); 
+  };
 
   if (!session) {
     return (
@@ -276,7 +292,6 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* COUNTERS */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2 bg-[#c0392b]/10 text-[#c0392b] rounded-xl px-4 py-2"><span className="font-semibold text-sm">Total: <strong>{allItems.length}</strong> produse</span></div>
@@ -291,7 +306,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* TABS & TABLE */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <div><h2 className="font-semibold">{categories.find((c) => c.id === activeCategory)?.label}</h2><p className="text-xs text-gray-400">{items.length} produse</p></div>
@@ -309,19 +323,27 @@ export default function AdminPage() {
                   <option value="">Fără badge</option><option value="new">🆕 New</option><option value="popular">🔥 Popular</option><option value="chef">👨‍🍳 Chef</option>
                 </select>
               </div>
+              
+              {/* REPARATIE AICI: Am adaugat 'relative' si 'w-fit' */}
               <div className="flex items-center gap-4 mb-4">
-                <label className="border border-amber-300 text-amber-700 bg-white px-3 py-2 rounded-lg text-sm cursor-pointer font-medium">
-                  {newProductFile ? newProductFile.name : 'Alege imaginea'}
-                  <input type="file" accept="image/*" onChange={(e) => {
-                    const f = e.target.files?.[0] ?? null; setNewProductFile(f);
-                    if (f) setNewProductPreview(URL.createObjectURL(f));
-                  }} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" />
+                <label className="relative border border-amber-300 text-amber-700 bg-white px-3 py-2 rounded-lg text-sm cursor-pointer font-medium hover:bg-amber-50 transition-colors w-fit overflow-hidden">
+                  {newProductFile ? newProductFile.name : 'Alege imaginea (Opțional)'}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] ?? null; setNewProductFile(f);
+                      if (f) setNewProductPreview(URL.createObjectURL(f));
+                    }} 
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+                  />
                 </label>
-                {newProductPreview && <img src={newProductPreview} className="w-12 h-12 rounded object-cover" />}
+                {newProductPreview && <img src={newProductPreview} className="w-12 h-12 rounded object-cover border border-amber-200" />}
               </div>
+
               <div className="flex gap-2">
-                <button onClick={handleAddProduct} disabled={addingProduct} className="bg-[#c0392b] text-white px-4 py-2 rounded-lg text-sm font-medium">{addingProduct ? 'Se adaugă...' : 'Salvează'}</button>
-                <button onClick={resetAddForm} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm">Anulează</button>
+                <button onClick={handleAddProduct} disabled={addingProduct} className="bg-[#c0392b] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#a93226]">{addingProduct ? 'Se adaugă...' : 'Salvează Produs'}</button>
+                <button onClick={resetAddForm} className="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Anulează</button>
               </div>
             </div>
           )}
@@ -342,8 +364,6 @@ export default function AdminPage() {
                 {items.map((item) => (
                   <tr key={item.id} className={`group transition-colors ${modifiedIds.has(item.id) ? 'bg-amber-50/60' : 'hover:bg-gray-50/60'}`}>
                     <td className="px-4 py-2.5"><ImageUploadCell item={item} onUploaded={handleImageUploaded} /></td>
-                    
-                    {/* COLOANA SORTARE */}
                     <td className="px-2 py-2.5">
                       <input 
                         type="number" 
@@ -352,20 +372,15 @@ export default function AdminPage() {
                         className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full text-center font-bold text-gray-700 focus:bg-white focus:ring-1 focus:ring-[#c0392b]/30 outline-none"
                       />
                     </td>
-
-                    <td className="px-4 py-2.5"><input value={item.name} onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)} className="bg-transparent w-full font-medium" /></td>
-                    <td className="px-4 py-2.5"><input type="number" value={item.price} onChange={(e) => handleFieldChange(item.id, 'price', parseFloat(e.target.value))} className="bg-transparent w-full text-[#c0392b] font-semibold" /></td>
-                    <td className="px-4 py-2.5"><input value={item.ingredients ?? ''} onChange={(e) => handleFieldChange(item.id, 'ingredients', e.target.value)} className="bg-transparent w-full text-gray-600" /></td>
+                    <td className="px-4 py-2.5"><input value={item.name} onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)} className="bg-transparent w-full font-medium focus:outline-none" /></td>
+                    <td className="px-4 py-2.5"><input type="number" value={item.price} onChange={(e) => handleFieldChange(item.id, 'price', parseFloat(e.target.value))} className="bg-transparent w-full text-[#c0392b] font-semibold focus:outline-none" /></td>
+                    <td className="px-4 py-2.5"><input value={item.ingredients ?? ''} onChange={(e) => handleFieldChange(item.id, 'ingredients', e.target.value)} className="bg-transparent w-full text-gray-600 focus:outline-none" /></td>
                     <td className="px-4 py-2.5">
                       <div className="flex gap-1 justify-center">
                         {modifiedIds.has(item.id) && (
-                          <button onClick={() => handleSave(item)} className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-green-700">
-                            OK
-                          </button>
+                          <button onClick={() => handleSave(item)} className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-green-700">OK</button>
                         )}
-                        <button onClick={() => handleDelete(item)} className="text-gray-400 hover:text-red-600 text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          Șterge
-                        </button>
+                        <button onClick={() => handleDelete(item)} className="text-gray-400 hover:text-red-600 text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">Șterge</button>
                       </div>
                     </td>
                   </tr>
