@@ -50,8 +50,8 @@ interface MenuItem {
   name: string;
   description: string;
   price: number;
-  category: string; // Folosim asta în UI
-  category_id?: string; // Asta vine din DB
+  category: string;
+  category_id?: string;
   ingredients: string;
   weight: string;
   badge: Badge;
@@ -141,7 +141,6 @@ export default function AdminPage() {
   const loadAllItems = useCallback(async () => {
     const { data, error } = await supabase.from('menu_items').select('*').order('sort_order', { ascending: true });
     if (!error && data) {
-      // TRADUCERE: Mapăm category_id din DB în proprietatea category din cod
       const loaded = data.map(item => ({
         ...item,
         category: item.category_id || 'pizza'
@@ -157,7 +156,6 @@ export default function AdminPage() {
   const loadCategoryItems = useCallback(async (category: string) => {
     if (!category) return;
     setLoading(true);
-    // TRADUCERE: Căutăm în DB după coloana category_id
     const { data, error } = await supabase.from('menu_items').select('*').eq('category_id', category).order('sort_order', { ascending: true });
     if (!error && data) {
       const loaded = data.map(item => ({
@@ -189,6 +187,7 @@ export default function AdminPage() {
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); setSession(false); };
+  
   const handleFieldChange = (id: number, field: keyof MenuItem, value: string | number | Badge) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
     setModifiedIds((prev) => new Set(prev).add(id));
@@ -196,8 +195,22 @@ export default function AdminPage() {
 
   const handleSave = async (item: MenuItem) => {
     setSavingIds((prev) => new Set(prev).add(item.id));
-    const { error } = await supabase.from('menu_items').update({ name: item.name, price: item.price, ingredients: item.ingredients, weight: item.weight, badge: item.badge }).eq('id', item.id);
-    if (error) showToast('Eroare la salvare.', 'error'); else { showToast(`"${item.name}" salvat!`); setModifiedIds((prev) => { const n = new Set(prev); n.delete(item.id); return n; }); loadAllItems(); }
+    const { error } = await supabase.from('menu_items').update({ 
+      name: item.name, 
+      price: item.price, 
+      ingredients: item.ingredients, 
+      weight: item.weight, 
+      badge: item.badge,
+      sort_order: item.sort_order // Am adaugat salvarea ordinii
+    }).eq('id', item.id);
+    
+    if (error) {
+      showToast('Eroare la salvare.', 'error');
+    } else { 
+      showToast(`"${item.name}" salvat!`); 
+      setModifiedIds((prev) => { const n = new Set(prev); n.delete(item.id); return n; }); 
+      loadAllItems(); 
+    }
     setSavingIds((prev) => { const n = new Set(prev); n.delete(item.id); return n; });
   };
 
@@ -222,7 +235,6 @@ export default function AdminPage() {
     if (newProductFile) imageUrl = await uploadImage(newProductFile);
     const maxSortOrder = allItems.filter((i) => i.category === activeCategory).reduce((max, i) => Math.max(max, i.sort_order ?? 0), 0);
     
-    // TRADUCERE: Inserăm folosind coloana category_id
     const { error } = await supabase.from('menu_items').insert({
       name: newProduct.name,
       description: newProduct.description,
@@ -231,7 +243,7 @@ export default function AdminPage() {
       ingredients: newProduct.ingredients,
       weight: newProduct.weight,
       badge: newProduct.badge,
-      sort_order: maxSortOrder + 1,
+      sort_order: maxSortOrder + 10, // Incrementam cu 10 pentru flexibilitate
       image_url: imageUrl,
     });
 
@@ -317,19 +329,43 @@ export default function AdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase">
-                <tr><th className="px-4 py-3 w-40">Imagine</th><th className="px-4 py-3">Produs</th><th className="px-4 py-3 w-28">Preț</th><th className="px-4 py-3">Ingrediente</th><th className="px-4 py-3 w-28 text-center">Acțiuni</th></tr>
+                <tr>
+                  <th className="px-4 py-3 w-32">Imagine</th>
+                  <th className="px-2 py-3 w-16 text-center">Nr.</th>
+                  <th className="px-4 py-3">Produs</th>
+                  <th className="px-4 py-3 w-28">Preț</th>
+                  <th className="px-4 py-3">Ingrediente</th>
+                  <th className="px-4 py-3 w-28 text-center">Acțiuni</th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {items.map((item) => (
                   <tr key={item.id} className={`group transition-colors ${modifiedIds.has(item.id) ? 'bg-amber-50/60' : 'hover:bg-gray-50/60'}`}>
                     <td className="px-4 py-2.5"><ImageUploadCell item={item} onUploaded={handleImageUploaded} /></td>
+                    
+                    {/* COLOANA SORTARE */}
+                    <td className="px-2 py-2.5">
+                      <input 
+                        type="number" 
+                        value={item.sort_order || 0} 
+                        onChange={(e) => handleFieldChange(item.id, 'sort_order', parseInt(e.target.value))}
+                        className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full text-center font-bold text-gray-700 focus:bg-white focus:ring-1 focus:ring-[#c0392b]/30 outline-none"
+                      />
+                    </td>
+
                     <td className="px-4 py-2.5"><input value={item.name} onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)} className="bg-transparent w-full font-medium" /></td>
                     <td className="px-4 py-2.5"><input type="number" value={item.price} onChange={(e) => handleFieldChange(item.id, 'price', parseFloat(e.target.value))} className="bg-transparent w-full text-[#c0392b] font-semibold" /></td>
                     <td className="px-4 py-2.5"><input value={item.ingredients ?? ''} onChange={(e) => handleFieldChange(item.id, 'ingredients', e.target.value)} className="bg-transparent w-full text-gray-600" /></td>
                     <td className="px-4 py-2.5">
                       <div className="flex gap-1 justify-center">
-                        {modifiedIds.has(item.id) && <button onClick={() => handleSave(item)} className="bg-green-600 text-white px-2 py-1 rounded text-xs">OK</button>}
-                        <button onClick={() => handleDelete(item)} className="text-gray-400 hover:text-red-600 text-xs px-2 py-1">Șterge</button>
+                        {modifiedIds.has(item.id) && (
+                          <button onClick={() => handleSave(item)} className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-green-700">
+                            OK
+                          </button>
+                        )}
+                        <button onClick={() => handleDelete(item)} className="text-gray-400 hover:text-red-600 text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Șterge
+                        </button>
                       </div>
                     </td>
                   </tr>
