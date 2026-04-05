@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase, MenuItemRow } from '@/lib/supabaseClient'
-import { menuData } from '@/lib/menuData'          // păstrăm metadatele categoriilor
+import { menuData } from '@/lib/menuData'
 import { Facebook, Instagram } from 'lucide-react'
 
-// ── STIL TRICOLOR (Categorii/tabs) ─────────────────────────────
+// ─── Stiluri ────────────────────────────────────────────────────────────────
 const TRICOLOR_TAB_STYLE = {
   background: 'linear-gradient(to right, #CE2B37 33.33%, #ffffff 33.33%, #ffffff 66.66%, #009246 66.66%)',
   WebkitBackgroundClip: 'text',
@@ -25,7 +25,6 @@ const BADGE: Record<string, string> = {
   Clasic:     'bg-[#C9922A] text-white',
 }
 
-// Mapăm rândurile DB la formatul așteptat de UI
 function toMenuItem(row: MenuItemRow) {
   return {
     name:        row.name,
@@ -37,24 +36,76 @@ function toMenuItem(row: MenuItemRow) {
   }
 }
 
+// ─── SVG-uri ─────────────────────────────────────────────────────────────────
+const TikTokIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+)
+const WoltIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M2 6L4.8 14L7 8.5L10 14L12.2 6L14.5 11.5L17 6"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+const GlovoIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M10 2C7.239 2 5 4.239 5 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.761-2.239-5-5-5z"
+      stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    <circle cx="10" cy="7" r="2" fill="currentColor" />
+  </svg>
+)
+const BoltIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M11.5 2L4.5 11H9.5L8.5 18L15.5 9H10.5L11.5 2Z"
+      stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+  </svg>
+)
+
+// ─── Glow handler ─────────────────────────────────────────────────────────────
+function glow(base: string, neon: string, rgba: string) {
+  return {
+    style: { color: base, transition: 'color 0.2s ease, filter 0.2s ease, transform 0.2s ease' } as React.CSSProperties,
+    onMouseEnter: (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.currentTarget.style.color = neon
+      e.currentTarget.style.filter = `drop-shadow(0 0 7px ${rgba})`
+      e.currentTarget.style.transform = 'scale(1.2)'
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.currentTarget.style.color = base
+      e.currentTarget.style.filter = 'none'
+      e.currentTarget.style.transform = 'scale(1)'
+    },
+  }
+}
+
+// ─── Date iconițe ────────────────────────────────────────────────────────────
+const SOCIAL = [
+  { label: 'Facebook',  href: 'https://www.facebook.com/ventonapoletano', Icon: () => <Facebook size={20} />, base: 'rgba(24,119,242,0.75)',  neon: '#1877F2', rgba: 'rgba(24,119,242,0.9)' },
+  { label: 'Instagram', href: 'https://www.instagram.com/ventonapoletano', Icon: () => <Instagram size={20} />, base: 'rgba(228,64,95,0.75)',   neon: '#E4405F', rgba: 'rgba(228,64,95,0.9)' },
+  { label: 'TikTok',   href: 'https://www.tiktok.com/@ventonapoletano',   Icon: TikTokIcon, base: 'rgba(255,255,255,0.60)', neon: '#ffffff',   rgba: 'rgba(255,255,255,0.8)' },
+]
+const DELIVERY = [
+  { label: 'Wolt',      href: 'https://wolt.com/ro-ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08', Icon: WoltIcon,  base: '#009DE0', neon: '#00d4ff', rgba: 'rgba(0,157,224,0.95)' },
+  { label: 'Glovo',     href: 'https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc',                           Icon: GlovoIcon, base: '#FFC244', neon: '#FFD700', rgba: 'rgba(255,194,68,0.95)' },
+  { label: 'Bolt Food', href: 'https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/',                       Icon: BoltIcon,  base: '#34D186', neon: '#50ffaa', rgba: 'rgba(52,209,134,0.95)' },
+]
+
+// ─── Componenta principală ────────────────────────────────────────────────────
 export default function Menu() {
   const [activeCategory, setActiveCategory] = useState('pizza')
-
-  // Cache local: { categoryId -> items[] }
   const [itemsCache, setItemsCache] = useState<Record<string, ReturnType<typeof toMenuItem>[]>>({})
   const [loading, setLoading]       = useState(false)
   const [error, setError]           = useState<string | null>(null)
 
-  const activeData = menuData.find((c) => c.id === activeCategory)!
+  const activeData  = menuData.find((c) => c.id === activeCategory)!
   const activeItems = itemsCache[activeCategory]
 
-  // Fetch categoria activă dacă nu e în cache
   useEffect(() => {
-    if (itemsCache[activeCategory]) return   // deja încărcat
-
+    if (itemsCache[activeCategory]) return
     setLoading(true)
     setError(null)
-
     supabase
       .from('menu_items')
       .select('*')
@@ -62,57 +113,56 @@ export default function Menu() {
       .order('sort_order', { ascending: true })
       .then(({ data, error: err }) => {
         setLoading(false)
-        if (err || !data) {
-          setError('Eroare la încărcarea meniului. Reîncarcă pagina.')
-          return
-        }
-        setItemsCache((prev) => ({
-          ...prev,
-          [activeCategory]: (data as MenuItemRow[]).map(toMenuItem),
-        }))
+        if (err || !data) { setError('Eroare la încărcarea meniului. Reîncarcă pagina.'); return }
+        setItemsCache((prev) => ({ ...prev, [activeCategory]: (data as MenuItemRow[]).map(toMenuItem) }))
       })
-  }, [activeCategory])   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeCategory]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const items = activeItems ?? []
 
   return (
     <section id="meniu" className="py-0">
 
-      {/* ── HEADER DARK (Social + Wolt) ────────────────────────────────── */}
+      {/* ── HEADER DARK ─────────────────────────────────────────────────────── */}
       <div className="relative bg-[#1C1A17] text-center px-4 pt-10 pb-8">
-        {/* Tricolor de sus */}
+
+        {/* Tricolor top */}
         <div className="absolute top-0 left-0 right-0 flex h-[5px]">
           <div className="flex-1 bg-[#009246]" />
           <div className="flex-1 bg-white" />
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
 
-        <div className="flex flex-wrap justify-center items-center gap-8 mb-8">
-          <div className="flex items-center gap-6">
-            <a href="https://www.facebook.com/ventonapoletano" target="_blank" rel="noopener noreferrer"
-               className="text-white/40 hover:text-[#1877F2] transition-colors duration-300">
-              <Facebook size={20} />
-            </a>
-            <a href="https://www.instagram.com/ventonapoletano" target="_blank" rel="noopener noreferrer"
-               className="text-white/40 hover:text-[#E4405F] transition-colors duration-300">
-              <Instagram size={20} />
-            </a>
-            <a href="https://www.tiktok.com/@ventonapoletano" target="_blank" rel="noopener noreferrer"
-               className="text-white/40 hover:text-[#00f2ea] transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-              </svg>
-            </a>
+        {/* ── Rând iconițe: social | delivery ── */}
+        <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-7 mb-8">
+
+          {/* Social */}
+          <div className="flex items-center gap-6 sm:gap-7">
+            {SOCIAL.map(({ label, href, Icon, base, neon, rgba }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+                aria-label={label} title={label}
+                {...glow(base, neon, rgba)}>
+                <Icon />
+              </a>
+            ))}
           </div>
-          <div className="hidden sm:block w-px h-4 bg-white/10" />
-          <a href="https://www.wolt.com/ro/rou/bucharest/restaurant/vento-napoletano" target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-2 bg-[#00C2E8] px-6 py-2 rounded-full hover:scale-105 transition-transform shadow-lg active:scale-95">
-            <span className="text-white text-[10px] font-bold uppercase tracking-wider">Comandă pe</span>
-            <span className="text-white font-black italic text-base tracking-tighter">Wolt</span>
-          </a>
+
+          {/* Separator — orizontal pe mobil, vertical pe desktop */}
+          <div className="w-12 h-px sm:w-px sm:h-5 bg-white/10" />
+
+          {/* Delivery */}
+          <div className="flex items-center gap-6 sm:gap-7">
+            {DELIVERY.map(({ label, href, Icon, base, neon, rgba }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+                aria-label={`Comandă pe ${label}`} title={`Comandă pe ${label}`}
+                {...glow(base, neon, rgba)}>
+                <Icon />
+              </a>
+            ))}
+          </div>
         </div>
 
+        {/* Tricolor decorativ */}
         <div className="flex items-center justify-center gap-2 mb-4">
           <div className="h-[2px] w-7 bg-[#CE2B37]" />
           <div className="h-[2px] w-7 bg-white/40" />
@@ -130,7 +180,7 @@ export default function Menu() {
         </motion.p>
       </div>
 
-      {/* ── TABS ──────────────────────────────────────────────── */}
+      {/* ── TABS ────────────────────────────────────────────────────────────── */}
       <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center">
           {menuData.map((cat) => (
@@ -138,95 +188,99 @@ export default function Menu() {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`relative flex items-center gap-2 px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
-                activeCategory === cat.id ? 'border-[#CE2B37]' : 'border-transparent opacity-70 hover:opacity-100'
+                activeCategory === cat.id
+                  ? 'text-white border-[#CE2B37]'
+                  : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
               }`}
             >
-              <span className="text-[15px]">{cat.icon}</span>
-              <span style={TRICOLOR_TAB_STYLE}>{cat.label}</span>
+              <span>{cat.emoji}</span>
+              <span style={activeCategory === cat.id ? TRICOLOR_TAB_STYLE : undefined}>
+                {cat.label}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── BODY ─────────────────────────────────────────────── */}
-      <div className="bg-[#FDF8EE] min-h-[60vh]">
-        <AnimatePresence mode="wait">
-          <motion.div key={activeCategory + '-label'} className="text-center py-7 px-4">
-            <p className="font-display italic text-[#CE2B37] text-xl font-light">
-              {activeData.labelIt}
-            </p>
-          </motion.div>
-        </AnimatePresence>
+      {/* ── CONTENT ─────────────────────────────────────────────────────────── */}
+      <div className="bg-[#FAF7F2] min-h-[400px] px-4 py-12">
+        <div className="max-w-7xl mx-auto">
 
-        <AnimatePresence mode="wait">
-          <motion.div key={activeCategory} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-
-            {/* Loading state */}
-            {loading && (
-              <div className="flex justify-center py-20">
-                <div className="w-8 h-8 border-2 border-[#CE2B37] border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
-
-            {/* Error state */}
-            {error && !loading && (
-              <p className="text-center text-[#CE2B37] font-body py-16">{error}</p>
-            )}
-
-            {/* Items grid — identic cu originalul */}
-            {!loading && !error && items.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[rgba(206,43,55,0.15)] border border-[rgba(206,43,55,0.15)]">
-                {items.map((item, i) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="group relative bg-[#FFFEF5] hover:bg-[#FFFBF0] transition-colors duration-200 p-5 md:p-6"
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#009246] scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-300" />
-
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <h3 className="font-display text-[1.25rem] font-semibold text-[#1C1A17] leading-snug uppercase">
-                          {item.name}
-                        </h3>
-                        {item.nameIt && (
-                          <p className="font-display italic text-[0.88rem] font-light text-[#CE2B37] mt-0.5">
-                            {item.nameIt}
-                          </p>
-                        )}
-                      </div>
-                      {item.badge && (
-                        <span className={`flex-shrink-0 text-[9px] tracking-widest uppercase font-body px-2 py-0.5 mt-1 ${BADGE[item.badge] ?? 'bg-gray-200 text-gray-700'}`}>
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3 my-[0.6rem]">
-                      <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" />
-                      <span className="font-display text-[1.45rem] font-light text-[#1C1A17]">
-                        {item.price}
-                      </span>
-                      <span className="text-[11px] text-[#8C7E65] font-body">lei</span>
-                    </div>
-
-                    <p className="text-[13px] font-body font-light text-[#3D3428] leading-[1.7]">
-                      {item.ingredients}
-                    </p>
-
-                    {item.weight && (
-                      <p className="mt-3 text-[10px] tracking-[0.2em] uppercase font-body text-[#8C7E65]">
-                        Gramaj: {item.weight}
-                      </p>
-                    )}
-                  </motion.div>
+          {loading && (
+            <div className="flex justify-center py-20">
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div key={i} className="w-2 h-2 rounded-full bg-[#CE2B37]"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }} />
                 ))}
               </div>
+            </div>
+          )}
+
+          {error && (
+            <p className="text-center text-[#CE2B37] font-body text-sm py-10">{error}</p>
+          )}
+
+          <AnimatePresence mode="wait">
+            {!loading && !error && (
+              <motion.div key={activeCategory}
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+
+                {activeData.description && (
+                  <p className="text-center text-[11px] tracking-[0.25em] uppercase font-body text-[#8C7E65] mb-10">
+                    {activeData.description}
+                  </p>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {items.map((item, idx) => (
+                    <motion.div key={item.name}
+                      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: idx * 0.04 }}
+                      className="bg-white border border-[#E8E0D5] p-6 hover:shadow-md transition-shadow duration-300">
+
+                      <div className="flex items-start justify-between gap-3 mb-1">
+                        <div>
+                          <p className="font-display text-[1.2rem] font-light text-[#1C1A17] leading-tight">
+                            {item.name}
+                          </p>
+                          {item.nameIt && (
+                            <p className="text-[11px] italic text-[#8C7E65] font-body mt-0.5">
+                              {item.nameIt}
+                            </p>
+                          )}
+                        </div>
+                        {item.badge && (
+                          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 flex-shrink-0 ${BADGE[item.badge] ?? 'bg-gray-200 text-gray-700'}`}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-3 my-[0.6rem]">
+                        <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" />
+                        <span className="font-display text-[1.45rem] font-light text-[#1C1A17]">{item.price}</span>
+                        <span className="text-[11px] text-[#8C7E65] font-body">lei</span>
+                      </div>
+
+                      <p className="text-[13px] font-body font-light text-[#3D3428] leading-[1.7]">
+                        {item.ingredients}
+                      </p>
+
+                      {item.weight && (
+                        <p className="mt-3 text-[10px] tracking-[0.2em] uppercase font-body text-[#8C7E65]">
+                          Gramaj: {item.weight}
+                        </p>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             )}
-          </motion.div>
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* FOOTER TRICOLOR */}
