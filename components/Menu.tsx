@@ -204,14 +204,8 @@ export default function Menu() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-              >
-                {activeData.description && (
-                  <p className="text-center text-[11px] tracking-[0.25em] uppercase font-body text-[#8C7E65] mb-10">
-                    {activeData.description}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              >      
+                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {items.map((item, idx) => (
                     <motion.div
                       key={item.name}
