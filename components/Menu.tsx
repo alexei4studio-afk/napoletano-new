@@ -164,7 +164,7 @@ export default function Menu() {
                   : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
               }`}
             >
-              <span>{cat.emoji}</span>
+              <span>{cat.icon}</span>
               <span style={activeCategory === cat.id ? TRICOLOR_TAB_STYLE : undefined}>
                 {cat.label}
               </span>
