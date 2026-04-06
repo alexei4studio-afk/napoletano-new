@@ -81,7 +81,7 @@ function GalerieContent() {
         {/* Back to Home */}
         <div className="mb-10">
           <Link
-            href="/"
+            href="/#galerie"
             className="inline-flex items-center gap-3 group"
           >
             <span className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 text-white/60 group-hover:border-white/60 group-hover:text-white transition-all duration-300">
