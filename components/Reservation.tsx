@@ -2,25 +2,28 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Phone, MapPin, Clock, Send } from 'lucide-react'
+import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
+
+const WHATSAPP_NUMBER = '40731333112'
 
 export default function Reservation() {
   const [form, setForm] = useState({
     name: '',
-    phone: '',
-    persons: '2',
     date: '',
     time: '',
-    message: '',
+    persons: '2',
   })
-  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // In production: POST to API
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 5000)
-    setForm({ name: '', phone: '', persons: '2', date: '', time: '', message: '' })
+    const message = [
+      'Rezervare Nouă - Napoletano:',
+      `Nume: ${form.name}`,
+      `Data: ${form.date}`,
+      `Ora: ${form.time}`,
+      `Persoane: ${form.persons}`,
+    ].join('\n')
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
   return (
@@ -102,7 +105,6 @@ export default function Reservation() {
               ))}
             </div>
 
-            {/* Map embed placeholder */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -124,7 +126,7 @@ export default function Reservation() {
 
           {/* Right — Form */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="bg-white border border-cream-300 p-8 md:p-10"
@@ -139,122 +141,84 @@ export default function Reservation() {
               </a>
             </p>
 
-            {submitted ? (
-              <div className="py-12 text-center">
-                <div className="w-12 h-12 bg-olive/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">✓</span>
-                </div>
-                <p className="font-display text-xl text-charcoal-900 mb-2">
-                  Rezervare trimisă!
-                </p>
-                <p className="text-sm font-body text-charcoal-800/50">
-                  Te vom contacta în curând pentru confirmare.
-                </p>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
+                  Nume *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400 transition-colors"
+                  placeholder="Numele tău"
+                />
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
-                      Nume *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400 transition-colors"
-                      placeholder="Numele tău"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
-                      Telefon *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400 transition-colors"
-                      placeholder="07xx xxx xxx"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                  <div>
-                    <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
-                      Persoane
-                    </label>
-                    <select
-                      value={form.persons}
-                      onChange={(e) => setForm({ ...form, persons: e.target.value })}
-                      className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                        <option key={n} value={n}>
-                          {n} {n === 1 ? 'persoană' : 'persoane'}
-                        </option>
-                      ))}
-                      <option value="9+">9+ persoane</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
-                      Data
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={form.date}
-                      onChange={(e) => setForm({ ...form, date: e.target.value })}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
-                      Ora
-                    </label>
-                    <select
-                      value={form.time}
-                      onChange={(e) => setForm({ ...form, time: e.target.value })}
-                      className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400"
-                    >
-                      <option value="">Alege ora</option>
-                      {['12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
-                        '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
-                        '20:00','20:30','21:00','21:30','22:00'].map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="sm:col-span-1">
+                  <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
+                    Persoane
+                  </label>
+                  <select
+                    value={form.persons}
+                    onChange={(e) => setForm({ ...form, persons: e.target.value })}
+                    className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400"
+                  >
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n} {n === 1 ? 'persoană' : 'persoane'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
                 <div>
                   <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
-                    Mențiuni speciale
+                    Data *
                   </label>
-                  <textarea
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    rows={3}
-                    className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400 resize-none"
-                    placeholder="Alergii, ocazie specială, preferințe loc..."
+                  <input
+                    type="date"
+                    required
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs tracking-widest uppercase font-body text-charcoal-800/60 mb-2">
+                    Ora *
+                  </label>
+                  <select
+                    required
+                    value={form.time}
+                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                    className="w-full border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-body text-charcoal-900 focus:outline-none focus:border-pomodoro-400"
+                  >
+                    <option value="">Alege ora</option>
+                    {['12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+                      '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
+                      '20:00','20:30','21:00','21:30','22:00'].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-pomodoro-600 hover:bg-pomodoro-700 text-white font-body text-sm tracking-widest uppercase py-4 flex items-center justify-center gap-3 transition-colors duration-200"
-                >
-                  <Send size={14} />
-                  Trimite Rezervarea
-                </button>
-              </form>
-            )}
+              <button
+                type="submit"
+                className="w-full text-white font-body text-sm tracking-widest uppercase py-4 flex items-center justify-center gap-3 transition-colors duration-200"
+                style={{ backgroundColor: '#25D366' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1ebe5d')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#25D366')}
+              >
+                <MessageCircle size={16} />
+                Trimite pe WhatsApp
+              </button>
+            </form>
           </motion.div>
+
         </div>
       </div>
     </section>
