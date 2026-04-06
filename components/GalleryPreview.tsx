@@ -16,6 +16,25 @@ function generateAltText(item: GalleryItem): string {
   return `${CATEGORY_ALT[item.category] ?? 'Pizza Napoletană autentică București'} — Foto #${item.id}`
 }
 
+const FALLBACK_PHOTOS = [
+  {
+    url: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format',
+    alt: 'Pizza Margherita napoletana proaspătă scoasă din cuptor',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&auto=format',
+    alt: 'Maestru pizzar pregătind aluatul dospit 72 ore',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1528137871618-79d2761e3fd5?w=800&q=80&auto=format',
+    alt: 'Ingrediente italiene premium DOP Napoletano',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80&auto=format',
+    alt: 'Design interior restaurant Napoletano București',
+  },
+]
+
 export default function GalleryPreview() {
   const [items, setItems] = useState<GalleryItem[]>([])
 
@@ -30,17 +49,18 @@ export default function GalleryPreview() {
       })
   }, [])
 
-  if (items.length === 0) return null
+  const useFallback = items.length === 0
 
   return (
     <section id="galerie" className="py-24 bg-white px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
+
+        <Link href="/galerie-napoletano" className="block text-center mb-14 group cursor-pointer">
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-pomodoro-600 text-xs tracking-[0.4em] uppercase font-body mb-3"
+            className="text-pomodoro-600 text-xs tracking-[0.4em] uppercase font-body mb-3 transition-opacity duration-300 group-hover:opacity-70"
           >
             Galerie Foto
           </motion.p>
@@ -48,55 +68,61 @@ export default function GalleryPreview() {
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-display text-4xl md:text-5xl font-light text-charcoal-900"
+            className="font-display text-4xl md:text-5xl font-light text-charcoal-900 transition-opacity duration-300 group-hover:opacity-70"
           >
             La Nostra Cucina
           </motion.h2>
-        </div>
+        </Link>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-          {items.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, scale: 0.96 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="relative aspect-square overflow-hidden group bg-zinc-100"
-            >
-              {item.type === 'image' ? (
-                <img
-                  src={item.url}
-                  alt={generateAltText(item)}
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              ) : (
-                <video
-                  src={item.url}
-                  className="w-full h-full object-cover"
-                  muted
-                  playsInline
-                />
-              )}
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </motion.div>
-          ))}
+          {useFallback
+            ? FALLBACK_PHOTOS.map((photo, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="relative aspect-square overflow-hidden group bg-zinc-100"
+                >
+                  <img
+                    src={photo.url}
+                    alt={photo.alt}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </motion.div>
+              ))
+            : items.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="relative aspect-square overflow-hidden group bg-zinc-100"
+                >
+                  {item.type === 'image' ? (
+                    <img
+                      src={item.url}
+                      alt={generateAltText(item)}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <video
+                      src={item.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </motion.div>
+              ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-10 text-center"
-        >
-          <Link
-            href="/galerie-napoletano"
-            className="inline-block border border-charcoal-900 text-charcoal-900 font-body text-xs tracking-[0.3em] uppercase px-10 py-4 hover:bg-charcoal-900 hover:text-white transition-colors duration-300"
-          >
-            Vezi galeria completă
-          </Link>
-        </motion.div>
       </div>
     </section>
   )
