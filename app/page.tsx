@@ -1,7 +1,7 @@
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import Menu from '@/components/Menu'
-import GalleryPreview from '@/components/GalleryPreview'
+import Gallery from '@/components/Gallery'
 import Story from '@/components/Story'
 import Events from '@/components/Events'
 import Testimonials from '@/components/Testimonials'
@@ -16,7 +16,7 @@ export default function Home() {
       <Hero />
       <Menu />
       <Story />
-      <GalleryPreview />
+      <Gallery />
       <Events />
       <Testimonials />
       <Reservation />

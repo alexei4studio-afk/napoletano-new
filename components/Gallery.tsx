@@ -2,27 +2,32 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const photos = [
   {
-    src: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format',
-    alt: 'Pizza Margherita napoletana proaspătă scoasă din cuptor',
+    src: '/nav-zones/restaurant.png',
+    alt: 'Interior restaurant Napoletano București',
     span: 'col-span-1 row-span-2',
+    href: '/galerie-napoletano?category=restaurant',
   },
   {
-    src: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&auto=format',
-    alt: 'Maestru pizzar pregătind aluatul dospit 72 ore',
+    src: '/nav-zones/terasa.png',
+    alt: 'Terasă restaurant Napoletano',
     span: 'col-span-1',
+    href: '/galerie-napoletano?category=terasa',
   },
   {
-    src: 'https://images.unsplash.com/photo-1528137871618-79d2761e3fd5?w=800&q=80&auto=format',
-    alt: 'Ingrediente italiene premium DOP Napoletano',
+    src: '/nav-zones/evenimente.png',
+    alt: 'Evenimente private Napoletano',
     span: 'col-span-1',
+    href: '/galerie-napoletano?category=evenimente',
   },
   {
-    src: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80&auto=format',
-    alt: 'Design interior restaurant Napoletano București',
+    src: '/nav-zones/toate.png',
+    alt: 'Galerie completă Napoletano',
     span: 'col-span-2',
+    href: '/galerie-napoletano',
   },
 ]
 
@@ -59,15 +64,17 @@ export default function Gallery() {
               transition={{ delay: i * 0.1 }}
               className={`relative overflow-hidden group ${photo.span}`}
             >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                sizes="(max-width: 768px) 50vw, 33vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Link href={photo.href} className="block w-full h-full">
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </Link>
             </motion.div>
           ))}
         </div>
