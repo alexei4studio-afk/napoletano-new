@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
@@ -27,7 +27,7 @@ const generateAltText = (item: GalleryItem) => {
   return `${categoryContext[item.category] || categoryContext['all']} — Foto #${item.id}`
 }
 
-export default function GaleriePage() {
+function GalerieContent() {
   const searchParams = useSearchParams()
   const [items, setItems] = useState<GalleryItem[]>([])
   const [activeTab, setActiveTab] = useState(searchParams.get('category') || 'all')
@@ -233,5 +233,13 @@ export default function GaleriePage() {
         )}
       </AnimatePresence>
     </main>
+  )
+}
+
+export default function GaleriePage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-black" />}>
+      <GalerieContent />
+    </Suspense>
   )
 }

@@ -119,7 +119,7 @@ export default function Story() {
               className="relative overflow-hidden aspect-video"
             >
               <img
-                src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80&auto=format"
+                src="/la-nostra-storia.png"
                 alt="Pizzaiolo napoletano"
                 className="w-full h-full object-cover grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
               />
