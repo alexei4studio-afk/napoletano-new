@@ -54,8 +54,10 @@ export default function RootLayout({
                 "latitude": 44.444636,
                 "longitude": 26.046522
               },
+              "image": "https://napoletano.ro/la-nostra-storia.png",
               "url": "https://napoletano.ro",
               "telephone": "+40731333112",
+              "priceRange": "€€",
               "servesCuisine": "Italian, Pizza Napoletana",
               "openingHoursSpecification": [
                 {

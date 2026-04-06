@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps'
 
 const RESTAURANT_POSITION = { lat: 44.444636, lng: 26.046522 }
 
@@ -218,21 +218,10 @@ export default function Reservation() {
             <Map
               defaultCenter={RESTAURANT_POSITION}
               defaultZoom={17}
-              mapId="DEMO_MAP_ID"
               gestureHandling="greedy"
               style={{ width: '100%', height: '100%' }}
             >
-              <AdvancedMarker position={RESTAURANT_POSITION}>
-                <div style={{
-                  width: 20,
-                  height: 20,
-                  background: '#c0392b',
-                  borderRadius: '50% 50% 50% 0',
-                  transform: 'rotate(-45deg)',
-                  border: '2px solid white',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
-                }} />
-              </AdvancedMarker>
+              <Marker position={RESTAURANT_POSITION} />
             </Map>
           </APIProvider>
         </motion.div>
