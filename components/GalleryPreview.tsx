@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { supabase, GalleryItem } from '@/lib/supabaseClient'
 
@@ -82,6 +83,20 @@ export default function GalleryPreview() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-10 text-center"
+        >
+          <Link
+            href="/galerie-napoletano"
+            className="inline-block border border-charcoal-900 text-charcoal-900 font-body text-xs tracking-[0.3em] uppercase px-10 py-4 hover:bg-charcoal-900 hover:text-white transition-colors duration-300"
+          >
+            Vezi galeria completă
+          </Link>
+        </motion.div>
       </div>
     </section>
   )
