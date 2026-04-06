@@ -12,7 +12,7 @@ type Message = {
 // ── CONFIGURARE RĂSPUNSURI ──────────────────────────────────────────────
 const BOT_RESPONSES: Record<string, string> = {
   default:
-    'Ciao! Sunt Napoletano Bot 🍕 Pot să te ajut cu informații despre meniu, livrare prin Wolt sau rezervări.',
+    'Ciao! Sunt Napoletano Bot 🍕 Pot să te ajut cu informații despre meniu, livrare sau rezervări.',
   
   whatsapp: 
     'Poți să ne scrii direct pe WhatsApp aici pentru detalii rapide: <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-[#25D366]">Deschide WhatsApp</a>',
@@ -30,7 +30,7 @@ const BOT_RESPONSES: Record<string, string> = {
     'Avem pizza napoletană autentică, <b>Panini & Produse Pui</b> și Paste. <a href="#meniu" class="underline font-bold text-[#CE2B37]">Vezi meniul complet aici.</a>',
 
   livrare:
-    'Suntem pe <b>Wolt</b>! Comandă pizza, panini sau pui crispy direct la tine acasă. <br/><br/> <a href="https://www.wolt.com/ro/rou/bucharest/restaurant/vento-napoletano" target="_blank" class="inline-block bg-[#00C2E8] text-white px-4 py-1.5 rounded-full text-[10px] font-bold no-underline mt-1">COMANDĂ PE WOLT</a>',
+    'Livrăm direct la tine acasă! 🛵<br/><br/><b>Comandă online:</b><br/><div class="flex flex-wrap gap-2 mt-2"><a href="https://wolt.com/ro-ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08" target="_blank" class="inline-block bg-[#009DE0] text-white px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">WOLT</a><a href="https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc" target="_blank" class="inline-block bg-[#FFC244] text-black px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">GLOVO</a><a href="https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/" target="_blank" class="inline-block bg-[#34D186] text-white px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">BOLT FOOD</a></div><br/><b>Sau contactează-ne direct:</b><br/>📞 <a href="tel:0731333112" class="underline font-bold text-[#CE2B37]">0731 333 112</a><br/>💬 <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-[#25D366]">WhatsApp</a>',
 
   produse_noi:
     'Încearcă noile noastre produse: <b>Panini artizanale</b>, fâșii de pui <b>Crispy</b> sau aripioare picante! Avem și o selecție de produse italiene pentru acasă în secțiunea Parteneri. 🤝'
@@ -47,11 +47,11 @@ function getResponse(input: string): string {
   if (lower.includes('pui') || lower.includes('panini') || lower.includes('crispy') || lower.includes('parteneri')) return BOT_RESPONSES.produse_noi
   if (lower.includes('meniu') || lower.includes('pret') || lower.includes('preț') || lower.includes('mancare')) return BOT_RESPONSES.meniu
   
-  return 'Te pot ajuta cu detalii despre <b>WhatsApp</b>, <b>Meniu</b>, <b>Livrare Wolt</b> sau <b>Rezervări</b>. 🍕'
+  return 'Te pot ajuta cu detalii despre <b>WhatsApp</b>, <b>Meniu</b>, <b>Livrare</b> sau <b>Rezervări</b>. 🍕'
 }
 
 // AICI AM PUS WHATSAPP PRIMUL:
-const QUICK_REPLIES = ['WhatsApp', 'Livrare Wolt', 'Meniu', 'Panini & Pui', 'Rezervare']
+const QUICK_REPLIES = ['WhatsApp', 'Livrare', 'Meniu', 'Panini & Pui', 'Rezervare']
 
 export default function ChatBot() {
   const [open, setOpen] = useState(false)
