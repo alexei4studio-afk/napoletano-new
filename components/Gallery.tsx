@@ -68,22 +68,6 @@ export default function Gallery() {
           ))}
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center mt-8 text-xs tracking-widest uppercase font-body text-charcoal-800/40"
-        >
-          Urmărește-ne pe{' '}
-          <a
-            href="https://www.instagram.com/ventonapoletano/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-pomodoro-600 hover:underline"
-          >
-            @ventonapoletano
-          </a>
-        </motion.p>
       </div>
     </section>
   )
