@@ -212,7 +212,7 @@ export default function Reservation() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-12 h-72 lg:h-[420px] overflow-hidden border border-cream-300"
+          className="mt-12 h-72 lg:h-[420px] overflow-hidden border border-cream-300 relative"
         >
           <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
             <Map
@@ -224,6 +224,15 @@ export default function Reservation() {
               <Marker position={RESTAURANT_POSITION} />
             </Map>
           </APIProvider>
+          <a
+            href="https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute bottom-4 left-4 flex items-center gap-2 bg-pomodoro-600 hover:bg-pomodoro-700 text-white font-body text-xs tracking-widest uppercase px-5 py-3 transition-colors shadow-lg z-10"
+          >
+            <MapPin size={14} />
+            Obține Direcții
+          </a>
         </motion.div>
       </div>
     </section>

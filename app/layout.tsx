@@ -54,7 +54,7 @@ export default function RootLayout({
                 "latitude": 44.444636,
                 "longitude": 26.046522
               },
-              "image": "https://napoletano.ro/la-nostra-storia.png",
+              "image": "https://ebzvrpnngblxninmifee.supabase.co/storage/v1/object/public/gallery/napoletano-bucuresti-terasa-1775503085263.webp",
               "url": "https://napoletano.ro",
               "telephone": "+40731333112",
               "priceRange": "€€",
