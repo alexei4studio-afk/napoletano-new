@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import Menu from '@/components/Menu'
+import GalleryPreview from '@/components/GalleryPreview'
 import Story from '@/components/Story'
 import Gallery from '@/components/Gallery'
 import Events from '@/components/Events'
@@ -16,20 +17,8 @@ export default function Home() {
       <Hero />
       <Menu />
 
-      {/* Gallery CTA */}
-      <section className="bg-black py-20 flex items-center justify-center">
-        <a
-          href="/galerie-napoletano"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center gap-6 border border-white/20 px-14 py-7 hover:border-white/60 transition-all duration-500"
-        >
-          <span className="text-[10px] tracking-[0.55em] uppercase text-white font-light">
-            DESCOPERĂ GALERIA NAPOLETANO
-          </span>
-          <span className="text-white/30 group-hover:text-white/80 transition-colors duration-500 text-sm">→</span>
-        </a>
-      </section>
+      {/* Gallery Preview — last 6 photos from Supabase */}
+      <GalleryPreview />
 
       <Story />
       <Gallery />

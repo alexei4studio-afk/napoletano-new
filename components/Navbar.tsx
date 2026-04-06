@@ -9,7 +9,7 @@ const navLinks = [
   { href: '#meniu', label: 'Meniu' },
   { href: '#evenimente', label: 'Oferte' }, // Direcționează către secțiunea de Evenimente (Capacitate 35 pers)
   { href: '#poveste', label: 'Povestea Noastră' },
-  { href: '#galerie', label: 'Galerie' },
+  { href: '/galerie-napoletano', label: 'Galerie' },
   { href: '#contact', label: 'Contact' },
 ]
 
@@ -54,15 +54,25 @@ export default function Navbar() {
 
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm tracking-widest uppercase font-body font-light text-charcoal-800 hover:text-pomodoro-600 transition-colors duration-200"
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navLinks.map((link) =>
+                link.href.startsWith('/') ? (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm tracking-widest uppercase font-body font-light text-charcoal-800 hover:text-pomodoro-600 transition-colors duration-200"
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm tracking-widest uppercase font-body font-light text-charcoal-800 hover:text-pomodoro-600 transition-colors duration-200"
+                  >
+                    {link.label}
+                  </a>
+                )
+              )}
             </nav>
 
             {/* CTA */}
@@ -115,19 +125,36 @@ export default function Navbar() {
               </button>
             </div>
 
-            {navLinks.map((link, i) => (
-              <motion.a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.07 }}
-                className="font-display text-4xl text-white font-light tracking-widest hover:text-pomodoro-400 transition-colors"
-              >
-                {link.label}
-              </motion.a>
-            ))}
+            {navLinks.map((link, i) =>
+              link.href.startsWith('/') ? (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.07 }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="font-display text-4xl text-white font-light tracking-widest hover:text-pomodoro-400 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.07 }}
+                  className="font-display text-4xl text-white font-light tracking-widest hover:text-pomodoro-400 transition-colors"
+                >
+                  {link.label}
+                </motion.a>
+              )
+            )}
 
             <motion.div
               initial={{ opacity: 0 }}

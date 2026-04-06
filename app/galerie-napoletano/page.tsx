@@ -57,8 +57,8 @@ export default function GaleriePage() {
         <p className="text-[10px] tracking-[0.55em] uppercase text-white/30 mb-5">
           Napoletano · București
         </p>
-        <h1 className="text-5xl md:text-7xl font-light tracking-[0.15em] uppercase">
-          Galerie Napoletano
+        <h1 className="font-display text-5xl md:text-7xl font-light tracking-[0.15em] uppercase">
+          La Nostra Cucina — Galerie
         </h1>
       </motion.div>
 
