@@ -143,7 +143,7 @@ export default function Menu() {
               }`}
             >
               <span>{cat.icon}</span>
-              <span style={activeCategory === cat.id ? TRICOLOR_TAB_STYLE : undefined}>
+              <span style={TRICOLOR_TAB_STYLE}>
                 {cat.label}
               </span>
             </button>
