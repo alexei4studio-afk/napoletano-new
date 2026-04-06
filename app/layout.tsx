@@ -1,6 +1,8 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+// @ts-ignore
 import './globals.css'
 
+// 1. SEO & Social Media (Metadata)
 export const metadata: Metadata = {
   title: 'Napoletano — L\'Arte della Pizza Napoletana | București',
   description: 'Autentică pizzerie napoletană în București. Pizza napolitană veritabilă, ingrediente importate din Italia, cuptor cu lemne. Ion Nonna Otescu nr. 2, Sector 6.',
@@ -13,8 +15,14 @@ export const metadata: Metadata = {
     locale: 'ro_RO',
     type: 'website',
   },
+}
+
+// 2. Setări Ecran & Culori Sistem (Viewport) - REPARAT AICI
+export const viewport: Viewport = {
   themeColor: '#c0392b',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 }
 
 export default function RootLayout({

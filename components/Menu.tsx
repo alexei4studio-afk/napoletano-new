@@ -15,33 +15,32 @@ const TRICOLOR_TAB_STYLE = {
 
 const BADGE: Record<string, string> = {
   Bestseller: 'bg-[#CE2B37] text-white',
-  Signature:  'bg-[#1C1A17] text-white',
-  Premium:    'bg-[#C9922A] text-white',
-  Picantă:    'bg-[#E85D1A] text-white',
-  Veggie:     'bg-[#009246] text-white',
-  Top:        'bg-[#9E1A23] text-white',
-  'Per 2':    'bg-[#2E2B25] text-white',
-  Clasic:     'bg-[#C9922A] text-white',
+  Signature: 'bg-[#1C1A17] text-white',
+  Premium: 'bg-[#C9922A] text-white',
+  Picantă: 'bg-[#E85D1A] text-white',
+  Veggie: 'bg-[#009246] text-white',
+  Top: 'bg-[#9E1A23] text-white',
+  'Per 2': 'bg-[#2E2B25] text-white',
+  Clasic: 'bg-[#C9922A] text-white',
 }
 
 function toMenuItem(row: MenuItemRow) {
   return {
-    name:        row.name,
-    nameIt:      row.name_it  ?? undefined,
+    name: row.name,
+    nameIt: row.name_it ?? undefined,
     ingredients: row.ingredients,
-    price:       row.price,
-    weight:      row.weight   ?? undefined,
-    badge:       row.badge    ?? undefined,
+    price: row.price,
+    weight: row.weight ?? undefined,
+    badge: row.badge ?? undefined,
   }
 }
 
 export default function Menu() {
   const [activeCategory, setActiveCategory] = useState('pizza')
   const [itemsCache, setItemsCache] = useState<Record<string, ReturnType<typeof toMenuItem>[]>>({})
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const activeData  = menuData.find((c) => c.id === activeCategory)!
   const activeItems = itemsCache[activeCategory]
 
   useEffect(() => {
@@ -64,14 +63,14 @@ export default function Menu() {
           [activeCategory]: (data as MenuItemRow[]).map(toMenuItem),
         }))
       })
-  }, [activeCategory]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeCategory])
 
   const items = activeItems ?? []
 
   return (
     <section id="meniu" className="py-0">
 
-      {/* ── HEADER DARK ─────────────────────────────────────────────────── */}
+      {/* ── HEADER DARK (RESTAURAT IDENTIC) ────────────────────────────────── */}
       <div className="relative bg-[#1C1A17] text-center px-4 pt-10 pb-8">
 
         {/* Tricolor sus */}
@@ -81,54 +80,33 @@ export default function Menu() {
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
 
-        {/* Social + Delivery */}
+        {/* Social + Delivery (Icons REPUSE LA LOC) */}
         <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
 
-          {/* Social */}
           <div className="flex items-center gap-6">
-            <a href="https://www.facebook.com/ventonapoletano" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
-               className="text-[#1877F2]/50 hover:text-[#1877F2] hover:drop-shadow-[0_0_8px_#1877F2] transition-all duration-300">
+            <a href="https://www.facebook.com/ventonapoletano" target="_blank" rel="noopener noreferrer" className="text-[#1877F2]/50 hover:text-[#1877F2] transition-all duration-300">
               <Facebook size={20} />
             </a>
-            <a href="https://www.instagram.com/ventonapoletano" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
-               className="text-[#E4405F]/50 hover:text-[#E4405F] hover:drop-shadow-[0_0_8px_#E4405F] transition-all duration-300">
+            <a href="https://www.instagram.com/ventonapoletano" target="_blank" rel="noopener noreferrer" className="text-[#E4405F]/50 hover:text-[#E4405F] transition-all duration-300">
               <Instagram size={20} />
             </a>
-            <a href="https://www.tiktok.com/@ventonapoletano" target="_blank" rel="noopener noreferrer" aria-label="TikTok"
-               className="text-white/40 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.9)] transition-all duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-              </svg>
+            <a href="https://www.tiktok.com/@ventonapoletano" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-all duration-300">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" /></svg>
             </a>
           </div>
 
-          {/* Separator */}
           <div className="hidden sm:block w-px h-5 bg-white/15" />
 
-          {/* Delivery */}
+          {/* Delivery Icons CU LINK-URI */}
           <div className="flex items-center gap-6">
-            <a href="https://wolt.com/ro-ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08"
-               target="_blank" rel="noopener noreferrer" aria-label="Comandă pe Wolt" title="Wolt"
-               className="text-[#009DE0]/50 hover:text-[#009DE0] hover:drop-shadow-[0_0_8px_#009DE0] transition-all duration-300">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 6L4.8 14L7 8.5L10 14L12.2 6L14.5 11.5L17 6"/>
-              </svg>
+            <a href="https://wolt.com/ro/ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08" target="_blank" title="Wolt" className="text-[#009DE0]/50 hover:text-[#009DE0] transition-all duration-300">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 6L4.8 14L7 8.5L10 14L12.2 6L14.5 11.5L17 6" /></svg>
             </a>
-            <a href="https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc"
-               target="_blank" rel="noopener noreferrer" aria-label="Comandă pe Glovo" title="Glovo"
-               className="text-[#FFC244]/50 hover:text-[#FFC244] hover:drop-shadow-[0_0_8px_#FFC244] transition-all duration-300">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 2C7.239 2 5 4.239 5 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.761-2.239-5-5-5z"/>
-                <circle cx="10" cy="7" r="2" fill="currentColor" stroke="none"/>
-              </svg>
+            <a href="https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc" target="_blank" title="Glovo" className="text-[#FFC244]/50 hover:text-[#FFC244] transition-all duration-300">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 2C7.239 2 5 4.239 5 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.761-2.239-5-5-5z" /><circle cx="10" cy="7" r="2" fill="currentColor" stroke="none" /></svg>
             </a>
-            <a href="https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/"
-               target="_blank" rel="noopener noreferrer" aria-label="Comandă pe Bolt Food" title="Bolt Food"
-               className="text-[#34D186]/50 hover:text-[#34D186] hover:drop-shadow-[0_0_8px_#34D186] transition-all duration-300">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11.5 2L4.5 11H9.5L8.5 18L15.5 9H10.5L11.5 2Z"/>
-              </svg>
+            <a href="https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/" target="_blank" title="Bolt Food" className="text-[#34D186]/50 hover:text-[#34D186] transition-all duration-300">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11.5 2L4.5 11H9.5L8.5 18L15.5 9H10.5L11.5 2Z" /></svg>
             </a>
           </div>
         </div>
@@ -152,7 +130,7 @@ export default function Menu() {
       </div>
 
       {/* ── TABS ──────────────────────────────────────────────── */}
-      <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4">
+      <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center">
           {menuData.map((cat) => (
             <button
@@ -204,8 +182,8 @@ export default function Menu() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-              >      
-                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {items.map((item, idx) => (
                     <motion.div
                       key={item.name}
@@ -260,11 +238,8 @@ export default function Menu() {
         </div>
       </div>
 
-      {/* FOOTER TRICOLOR */}
       <div className="flex h-[6px]">
-        <div className="flex-1 bg-[#CE2B37]" />
-        <div className="flex-1 bg-white" />
-        <div className="flex-1 bg-[#009246]" />
+        <div className="flex-1 bg-[#CE2B37]" /><div className="flex-1 bg-white" /><div className="flex-1 bg-[#009246]" />
       </div>
     </section>
   )

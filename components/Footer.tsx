@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Phone, MapPin, Clock, Instagram, Facebook } from 'lucide-react'
 
-// ─── SVG-uri iconițe ─────────────────────────────────────────────────────────
+// ─── SVG-uri iconițe (Restaurate 100%) ─────────────────────────────────────────
 const TikTokIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -47,7 +47,6 @@ function glow(base: string, neon: string, rgba: string) {
   }
 }
 
-// ─── Date iconițe ─────────────────────────────────────────────────────────────
 const SOCIAL = [
   { label: 'Facebook',  href: 'https://www.facebook.com/ventonapoletano',   Icon: () => <Facebook size={16} />,  base: 'rgba(24,119,242,0.75)',  neon: '#1877F2', rgba: 'rgba(24,119,242,0.9)' },
   { label: 'Instagram', href: 'https://www.instagram.com/ventonapoletano',  Icon: () => <Instagram size={16} />, base: 'rgba(228,64,95,0.75)',   neon: '#E4405F', rgba: 'rgba(228,64,95,0.9)' },
@@ -60,6 +59,9 @@ const DELIVERY = [
 ]
 
 export default function Footer() {
+  // URL-ul care forțează direcțiile în Google Maps
+  const mapsDirectionsUrl = "https://www.google.com/maps/dir/?api=1&destination=44.444636,26.046522";
+
   return (
     <footer id="contact" className="bg-charcoal-900 border-t border-white/5">
 
@@ -87,13 +89,11 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ── Main footer ───────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
           {/* ── Brand col ── */}
           <div className="sm:col-span-2 lg:col-span-2">
-            {/* Logo */}
             <p className="font-display text-3xl font-light text-white tracking-widest mb-1"
               style={{ letterSpacing: '0.2em' }}>
               NAPOLETANO
@@ -106,10 +106,7 @@ export default function Footer() {
               superioară, aluat dospit 72 de ore, cuptor cu lemne la 450°C.
             </p>
 
-            {/* ── Iconițe sociale + delivery ── */}
             <div className="flex flex-col gap-4">
-
-              {/* Rândul 1 — social */}
               <div className="flex items-center gap-5">
                 {SOCIAL.map(({ label, href, Icon, base, neon, rgba }) => (
                   <motion.a
@@ -126,11 +123,7 @@ export default function Footer() {
                     <Icon />
                   </motion.a>
                 ))}
-
-                {/* separator */}
                 <span className="w-px h-4 bg-white/10" />
-
-                {/* Rândul 1 continuare — delivery (pe același rând pe desktop) */}
                 {DELIVERY.map(({ label, href, Icon, base, neon, rgba }) => (
                   <motion.a
                     key={label}
@@ -147,8 +140,6 @@ export default function Footer() {
                   </motion.a>
                 ))}
               </div>
-
-              {/* Label discret sub iconițe */}
               <p className="text-[9px] uppercase tracking-[0.28em] text-white/20 font-body font-light">
                 Social · Wolt · Glovo · Bolt Food
               </p>
@@ -178,17 +169,33 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* ── Contact ── */}
+          {/* ── Contact (REPARAT CU DIRECȚII MAPS) ── */}
           <div>
             <p className="text-xs tracking-widest uppercase font-body text-white/30 mb-5">
               Contact
             </p>
             <ul className="space-y-5">
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-3 group">
                 <MapPin size={14} className="text-pomodoro-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/50 font-body text-sm font-light leading-relaxed">
-                  Ion Nonna Otescu nr. 2<br />București, Sector 6
-                </span>
+                <div className="flex flex-col gap-2">
+                  <a 
+                    href={mapsDirectionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/50 hover:text-white font-body text-sm font-light leading-relaxed transition-colors"
+                  >
+                    Ion Nonna Otescu nr. 2<br />București, Sector 6
+                  </a>
+                  {/* Buton Navigație */}
+                  <a 
+                    href={mapsDirectionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-[10px] tracking-widest uppercase font-bold text-pomodoro-400 hover:text-pomodoro-300 transition-all border-b border-pomodoro-400/20 pb-0.5 w-fit"
+                  >
+                    Vezi Traseu Maps →
+                  </a>
+                </div>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={14} className="text-pomodoro-400 flex-shrink-0" />
@@ -210,7 +217,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ── Bottom bar ────────────────────────────────────────────────────── */}
+      {/* ── Bottom bar ── */}
       <div className="border-t border-white/5 py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <p className="text-white/25 font-body text-xs">
