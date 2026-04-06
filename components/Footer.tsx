@@ -60,7 +60,7 @@ const DELIVERY = [
 
 export default function Footer() {
   // URL-ul care forțează direcțiile în Google Maps
-  const mapsDirectionsUrl = "https://www.google.com/maps/dir/?api=1&destination=44.444636,26.046522";
+  const mapsDirectionsUrl = "https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving";
 
   return (
     <footer id="contact" className="bg-charcoal-900 border-t border-white/5">

@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
+import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
+
+const RESTAURANT_POSITION = { lat: 44.444636, lng: 26.046522 }
 
 const WHATSAPP_NUMBER = '40731333112'
 
@@ -105,23 +108,6 @@ export default function Reservation() {
               ))}
             </div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="mt-10 aspect-video bg-cream-200 border border-cream-300 flex items-center justify-center overflow-hidden"
-            >
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2849.0!2d26.04!3d44.43!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDTCsDI1JzU0LjgiTiAyNsKwMDInMjQuMCJF!5e0!3m2!1sro!2sro!4v1"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Napoletano pe hartă"
-              />
-            </motion.div>
           </div>
 
           {/* Right — Form */}
@@ -220,6 +206,36 @@ export default function Reservation() {
           </motion.div>
 
         </div>
+
+        {/* Hartă full-width */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12 h-72 lg:h-[420px] overflow-hidden border border-cream-300"
+        >
+          <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
+            <Map
+              defaultCenter={RESTAURANT_POSITION}
+              defaultZoom={17}
+              mapId="DEMO_MAP_ID"
+              gestureHandling="greedy"
+              style={{ width: '100%', height: '100%' }}
+            >
+              <AdvancedMarker position={RESTAURANT_POSITION}>
+                <div style={{
+                  width: 20,
+                  height: 20,
+                  background: '#c0392b',
+                  borderRadius: '50% 50% 50% 0',
+                  transform: 'rotate(-45deg)',
+                  border: '2px solid white',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                }} />
+              </AdvancedMarker>
+            </Map>
+          </APIProvider>
+        </motion.div>
       </div>
     </section>
   )

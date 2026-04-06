@@ -32,7 +32,49 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ro">
-      <body>{children}</body>
+      <body>
+        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Restaurant",
+              "name": "Napoletano Pizzeria Napoletana",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Ion Nonna Otescu nr. 2",
+                "addressLocality": "București",
+                "addressRegion": "Sector 6",
+                "postalCode": "060057",
+                "addressCountry": "RO"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 44.444636,
+                "longitude": 26.046522
+              },
+              "url": "https://napoletano.ro",
+              "telephone": "+40731333112",
+              "servesCuisine": "Italian, Pizza Napoletana",
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+                  "opens": "12:00",
+                  "closes": "23:00"
+                },
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Friday", "Saturday", "Sunday"],
+                  "opens": "12:00",
+                  "closes": "00:00"
+                }
+              ]
+            })
+          }}
+        />
+      </body>
     </html>
   )
 }
