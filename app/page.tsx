@@ -3,7 +3,6 @@ import Hero from '@/components/Hero'
 import Menu from '@/components/Menu'
 import GalleryPreview from '@/components/GalleryPreview'
 import Story from '@/components/Story'
-import Gallery from '@/components/Gallery'
 import Events from '@/components/Events'
 import Testimonials from '@/components/Testimonials'
 import Reservation from '@/components/Reservation'
@@ -16,13 +15,9 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Menu />
-
-      {/* Gallery Preview — last 6 photos from Supabase */}
-      <GalleryPreview />
-
       <Story />
-      <Gallery />
-      <Events /> {/* Secțiunea: Capacitate 35 pers & Terasă */}
+      <GalleryPreview />
+      <Events />
       <Testimonials />
       <Reservation />
       <Footer />
