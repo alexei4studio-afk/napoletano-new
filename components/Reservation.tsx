@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
+import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
+
+const PIN_PHOTO = 'https://ebzvrpnngblxninmifee.supabase.co/storage/v1/object/public/gallery/napoletano-bucuresti-terasa-1775503085263.webp'
 
 const RESTAURANT_POSITION = { lat: 44.444636, lng: 26.046522 }
 const PLACE_ID = 'ChIJ3cczhqH_sUARuysISXSoz_8'
@@ -221,21 +224,69 @@ export default function Reservation() {
 
         </div>
 
-        {/* Rândul 2: Hartă full-width */}
+        {/* Rândul 2: Hartă full-width cu pin foto */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="h-[520px] overflow-hidden border border-cream-300 relative"
         >
-          <iframe
-            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=place_id:ChIJ3cczhqH_sUARuysISXSoz_8&zoom=15&language=ro`}
-            style={{ border: 0, width: '100%', height: '100%' }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Napoletano Pizzeria Napoletana"
-          />
+          <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
+            <Map
+              defaultCenter={RESTAURANT_POSITION}
+              defaultZoom={16}
+              mapId="DEMO_MAP_ID"
+              disableDefaultUI
+              gestureHandling="cooperative"
+              style={{ width: '100%', height: '100%' }}
+            >
+              <AdvancedMarker position={RESTAURANT_POSITION} title="Napoletano Pizzeria Napoletana">
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))',
+                }}>
+                  <div style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '3px solid #c0392b',
+                    background: '#fff',
+                  }}>
+                    <img
+                      src={PIN_PHOTO}
+                      alt="Napoletano"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                  <div style={{
+                    background: '#c0392b',
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '3px 8px',
+                    borderRadius: 2,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    Napoletano
+                  </div>
+                  <div style={{
+                    width: 0,
+                    height: 0,
+                    borderLeft: '6px solid transparent',
+                    borderRight: '6px solid transparent',
+                    borderTop: '8px solid #c0392b',
+                    marginTop: -2,
+                  }} />
+                </div>
+              </AdvancedMarker>
+            </Map>
+          </APIProvider>
           <a
             href={MAPS_DIRECTIONS_URL}
             target="_blank"
