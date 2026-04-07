@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
-import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps'
 
 const RESTAURANT_POSITION = { lat: 44.444636, lng: 26.046522 }
 const PLACE_ID = 'ChIJ3cczhqH_sUARuysISXSoz_8'
@@ -12,7 +11,6 @@ const MAPS_DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=
 const WHATSAPP_NUMBER = '40731333112'
 
 export default function Reservation() {
-  const [infoOpen, setInfoOpen] = useState(false)
   const [form, setForm] = useState({
     name: '',
     date: '',
@@ -23,7 +21,7 @@ export default function Reservation() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const message = [
-      'Rezervare Nouă - Napoletano:',
+      'Rezervare Nouă Napoletano:',
       `Nume: ${form.name}`,
       `Data: ${form.date}`,
       `Ora: ${form.time}`,
@@ -35,85 +33,86 @@ export default function Reservation() {
   return (
     <section id="rezerva" className="py-24 md:py-32 bg-cream-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
-          {/* Left — Info */}
-          <div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-pomodoro-600 text-xs tracking-[0.4em] uppercase font-body mb-4"
-            >
-              Vino la noi
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="font-display text-4xl md:text-5xl font-light text-charcoal-900 mb-8 leading-tight"
-            >
-              Rezervă-ți
-              <br />
-              <em className="italic text-pomodoro-600">masa acum.</em>
-            </motion.h2>
+        {/* Header + Info — full width */}
+        <div className="mb-12">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-pomodoro-600 text-xs tracking-[0.4em] uppercase font-body mb-4"
+          >
+            Vino la noi
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-display text-4xl md:text-5xl font-light text-charcoal-900 mb-10 leading-tight"
+          >
+            Rezervă-ți
+            <br />
+            <em className="italic text-pomodoro-600">masa acum.</em>
+          </motion.h2>
 
-            <div className="space-y-6">
-              {[
-                {
-                  Icon: MapPin,
-                  title: 'Adresă',
-                  lines: ['Ion Nonna Otescu nr. 2', 'București, Sector 6'],
-                },
-                {
-                  Icon: Phone,
-                  title: 'Telefon',
-                  lines: ['0731 333 112'],
-                  href: 'tel:+40731333112',
-                },
-                {
-                  Icon: Clock,
-                  title: 'Program',
-                  lines: ['Luni – Joi: 12:00 – 23:00', 'Vineri – Duminică: 12:00 – 00:00'],
-                },
-              ].map(({ Icon, title, lines, href }) => (
-                <motion.div
-                  key={title}
-                  initial={{ opacity: 0, x: -16 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  className="flex items-start gap-4"
-                >
-                  <div className="w-10 h-10 border border-pomodoro-600/30 flex items-center justify-center flex-shrink-0">
-                    <Icon size={16} className="text-pomodoro-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs tracking-widest uppercase font-body text-charcoal-800/50 mb-1">
-                      {title}
-                    </p>
-                    {lines.map((line) =>
-                      href ? (
-                        <a
-                          key={line}
-                          href={href}
-                          className="block font-body text-charcoal-900 font-light text-base hover:text-pomodoro-600 transition-colors"
-                        >
-                          {line}
-                        </a>
-                      ) : (
-                        <p key={line} className="font-body text-charcoal-900 font-light text-base">
-                          {line}
-                        </p>
-                      )
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
+          <div className="flex flex-col sm:flex-row gap-8">
+            {[
+              {
+                Icon: MapPin,
+                title: 'Adresă',
+                lines: ['Ion Nonna Otescu nr. 2', 'București, Sector 6'],
+              },
+              {
+                Icon: Phone,
+                title: 'Telefon',
+                lines: ['0731 333 112'],
+                href: 'tel:+40731333112',
+              },
+              {
+                Icon: Clock,
+                title: 'Program',
+                lines: ['Luni – Joi: 12:00 – 23:00', 'Vineri – Duminică: 12:00 – 00:00'],
+              },
+            ].map(({ Icon, title, lines, href }) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, x: -16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="flex items-start gap-4"
+              >
+                <div className="w-10 h-10 border border-pomodoro-600/30 flex items-center justify-center flex-shrink-0">
+                  <Icon size={16} className="text-pomodoro-600" />
+                </div>
+                <div>
+                  <p className="text-xs tracking-widest uppercase font-body text-charcoal-800/50 mb-1">
+                    {title}
+                  </p>
+                  {lines.map((line) =>
+                    href ? (
+                      <a
+                        key={line}
+                        href={href}
+                        className="block font-body text-charcoal-900 font-light text-base hover:text-pomodoro-600 transition-colors"
+                      >
+                        {line}
+                      </a>
+                    ) : (
+                      <p key={line} className="font-body text-charcoal-900 font-light text-base">
+                        {line}
+                      </p>
+                    )
+                  )}
+                </div>
+              </motion.div>
+            ))}
           </div>
+        </div>
 
-          {/* Right — Form */}
+        {/* Form STÂNGA | Hartă DREAPTA */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+
+          {/* Stânga — Formular */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -202,65 +201,39 @@ export default function Reservation() {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1ebe5d')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#25D366')}
               >
-                <MessageCircle size={16} />
+                <MessageCircle size={18} />
                 Trimite pe WhatsApp
               </button>
             </form>
           </motion.div>
 
-        </div>
-
-        {/* Hartă full-width */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 h-72 lg:h-[420px] overflow-hidden border border-cream-300 relative"
-        >
-          <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-            <Map
-              defaultCenter={RESTAURANT_POSITION}
-              defaultZoom={17}
-              gestureHandling="greedy"
-              style={{ width: '100%', height: '100%' }}
-            >
-              <Marker
-                position={RESTAURANT_POSITION}
-                title="Napoletano Pizzeria Napoletana"
-                onClick={() => setInfoOpen(true)}
-              />
-              {infoOpen && (
-                <InfoWindow
-                  position={RESTAURANT_POSITION}
-                  onCloseClick={() => setInfoOpen(false)}
-                >
-                  <div style={{ fontFamily: 'sans-serif', fontSize: '13px', lineHeight: '1.6' }}>
-                    <strong>Napoletano Pizzeria Napoletana</strong><br />
-                    Ion Nonna Otescu nr. 2<br />
-                    București, Sector 6<br />
-                    <a
-                      href={MAPS_DIRECTIONS_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#c0392b', textDecoration: 'none', fontWeight: 600 }}
-                    >
-                      Obține Direcții →
-                    </a>
-                  </div>
-                </InfoWindow>
-              )}
-            </Map>
-          </APIProvider>
-          <a
-            href={MAPS_DIRECTIONS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute bottom-4 left-4 flex items-center gap-2 bg-pomodoro-600 hover:bg-pomodoro-700 text-white font-body text-xs tracking-widest uppercase px-5 py-3 transition-colors shadow-lg z-10"
+          {/* Dreapta — Hartă */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="min-h-[420px] lg:min-h-0 overflow-hidden border border-cream-300 relative"
           >
-            <MapPin size={14} />
-            Obține Direcții
-          </a>
-        </motion.div>
+            <iframe
+              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=place_id:ChIJ3cczhqH_sUARuysISXSoz_8&zoom=17&language=ro`}
+              style={{ border: 0, width: '100%', height: '100%' }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Napoletano Pizzeria Napoletana"
+            />
+            <a
+              href={MAPS_DIRECTIONS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 left-4 flex items-center gap-2 bg-pomodoro-600 hover:bg-pomodoro-700 text-white font-body text-xs tracking-widest uppercase px-5 py-3 transition-colors shadow-lg z-10"
+            >
+              <MapPin size={14} />
+              Obține Direcții
+            </a>
+          </motion.div>
+
+        </div>
       </div>
     </section>
   )
