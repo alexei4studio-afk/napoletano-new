@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps'
 
 const RESTAURANT_POSITION = { lat: 44.444636, lng: 26.046522 }
 
 const WHATSAPP_NUMBER = '40731333112'
 
 export default function Reservation() {
+  const [infoOpen, setInfoOpen] = useState(false)
   const [form, setForm] = useState({
     name: '',
     date: '',
@@ -221,7 +222,31 @@ export default function Reservation() {
               gestureHandling="greedy"
               style={{ width: '100%', height: '100%' }}
             >
-              <Marker position={RESTAURANT_POSITION} />
+              <Marker
+                position={RESTAURANT_POSITION}
+                title="Napoletano Pizzeria Napoletana"
+                onClick={() => setInfoOpen(true)}
+              />
+              {infoOpen && (
+                <InfoWindow
+                  position={RESTAURANT_POSITION}
+                  onCloseClick={() => setInfoOpen(false)}
+                >
+                  <div style={{ fontFamily: 'sans-serif', fontSize: '13px', lineHeight: '1.6' }}>
+                    <strong>Napoletano Pizzeria Napoletana</strong><br />
+                    Ion Nonna Otescu nr. 2<br />
+                    București, Sector 6<br />
+                    <a
+                      href="https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#c0392b', textDecoration: 'none', fontWeight: 600 }}
+                    >
+                      Obține Direcții →
+                    </a>
+                  </div>
+                </InfoWindow>
+              )}
             </Map>
           </APIProvider>
           <a
