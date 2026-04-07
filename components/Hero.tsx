@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, MapPin, Phone, Clock } from 'lucide-react'
 
 export default function Hero() {
   return (
@@ -101,12 +101,12 @@ export default function Hero() {
           className="mt-16 flex flex-wrap items-center justify-center gap-8 text-white/50 text-xs tracking-widest uppercase font-body"
         >
           {[
-            { icon: '📍', text: 'Ion Nonna Otescu nr. 2, Sector 6' },
-            { icon: '📞', text: '0731 333 112' },
-            { icon: '🕐', text: 'Lun – Dum: 12:00 – 23:00' },
-          ].map(({ icon, text }) => (
+            { Icon: MapPin, text: 'Ion Nonna Otescu nr. 2, Sector 6' },
+            { Icon: Phone, text: '0731 333 112' },
+            { Icon: Clock, text: 'Lun–Joi: 12–23 · Vin–Dum: 12–00' },
+          ].map(({ Icon, text }) => (
             <span key={text} className="flex items-center gap-2">
-              <span className="text-sm">{icon}</span>
+              <Icon size={13} className="text-pomodoro-400" />
               {text}
             </span>
           ))}

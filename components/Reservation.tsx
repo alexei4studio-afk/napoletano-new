@@ -58,7 +58,7 @@ export default function Reservation() {
               <em className="italic text-pomodoro-600">masa acum.</em>
             </motion.h2>
 
-            <div className="flex flex-col sm:flex-row gap-8">
+            <div className="flex flex-col sm:flex-row gap-8 flex-wrap">
               {[
                 {
                   Icon: MapPin,
@@ -110,6 +110,18 @@ export default function Reservation() {
                 </motion.div>
               ))}
             </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 mt-2 border border-cream-300 px-4 py-2 w-fit"
+            >
+              <span className="text-base leading-none">🏳️‍🌈</span>
+              <span className="font-body text-xs tracking-widest uppercase text-charcoal-800/60">
+                LGBT+ Friendly
+              </span>
+            </motion.div>
           </div>
 
           {/* Dreapta: Formular */}
@@ -214,10 +226,10 @@ export default function Reservation() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="h-[420px] overflow-hidden border border-cream-300 relative"
+          className="h-[520px] overflow-hidden border border-cream-300 relative"
         >
           <iframe
-            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=place_id:ChIJ3cczhqH_sUARuysISXSoz_8&zoom=17&language=ro`}
+            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=place_id:ChIJ3cczhqH_sUARuysISXSoz_8&zoom=15&language=ro`}
             style={{ border: 0, width: '100%', height: '100%' }}
             allowFullScreen
             loading="lazy"
