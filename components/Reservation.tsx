@@ -6,6 +6,8 @@ import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react'
 import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps'
 
 const RESTAURANT_POSITION = { lat: 44.444636, lng: 26.046522 }
+const PLACE_ID = 'ChIJ3cczhqH_sUARuysISXSoz_8'
+const MAPS_DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana&destination_place_id=${PLACE_ID}&travelmode=driving`
 
 const WHATSAPP_NUMBER = '40731333112'
 
@@ -237,7 +239,7 @@ export default function Reservation() {
                     Ion Nonna Otescu nr. 2<br />
                     București, Sector 6<br />
                     <a
-                      href="https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving"
+                      href={MAPS_DIRECTIONS_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: '#c0392b', textDecoration: 'none', fontWeight: 600 }}
@@ -250,7 +252,7 @@ export default function Reservation() {
             </Map>
           </APIProvider>
           <a
-            href="https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving"
+            href={MAPS_DIRECTIONS_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="absolute bottom-4 left-4 flex items-center gap-2 bg-pomodoro-600 hover:bg-pomodoro-700 text-white font-body text-xs tracking-widest uppercase px-5 py-3 transition-colors shadow-lg z-10"
