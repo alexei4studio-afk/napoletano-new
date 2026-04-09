@@ -80,7 +80,29 @@ interface ProcessStats {
   width:        number;
   height:       number;
   wasResized:   boolean;
-  finalQuality: number; // 0-100
+  finalQuality: number;
+}
+
+interface Category {
+  id:         number;
+  name:       string;
+  label:      string;
+  label_it:   string | null;
+  icon:       string | null;
+  sort_order: number;
+}
+
+interface Product {
+  id:          number;
+  category_id: string;
+  name:        string;
+  description: string;
+  price:       number;
+  weight:      string | null;
+  badge:       string | null;
+  sub_title:   string | null;
+  sort_order:  number;
+  image_url:   string | null;
 }
 
 // ─── Canvas utils ─────────────────────────────────────────────────────────────
@@ -109,29 +131,25 @@ async function processGalleryImage(
   category: GalleryCategory
 ): Promise<{ file: File; altText: string; fileName: string; stats: ProcessStats }> {
   const MAX_WIDTH    = 1920;
-  const TARGET_BYTES = 300 * 1024; // 300 KB
+  const TARGET_BYTES = 300 * 1024;
   const timestamp    = Date.now();
   const seoFileName  = `napoletano-bucuresti-${category}-${timestamp}.webp`;
 
-  // 1. Decodare
   const bitmap = await createImageBitmap(file);
   let { width, height } = bitmap;
   const wasResized = width > MAX_WIDTH;
 
-  // 2. Redimensionare proporțională
   if (wasResized) {
     height = Math.round((height * MAX_WIDTH) / width);
     width  = MAX_WIDTH;
   }
 
-  // 3. Desenare pe canvas
   const canvas = document.createElement('canvas');
   canvas.width  = width;
   canvas.height = height;
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close(); // eliberăm memoria
+  bitmap.close();
 
-  // 4. Încearcă calitate 0.85; dacă tot > 300 KB → binary search
   let quality = 0.85;
   let blob    = await canvasToWebP(canvas, quality);
 
@@ -163,7 +181,6 @@ async function processGalleryImage(
 
 /**
  * Procesare video — doar redenumire SEO.
- * (Compresia video client-side necesită ffmpeg.wasm; exclusă intenționat.)
  */
 function processGalleryVideo(
   file: File,
@@ -187,7 +204,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
 
   // Navigare între secțiuni
-  const [activeView, setActiveView] = useState<'menu' | 'gallery'>('menu');
+  const [activeView, setActiveView] = useState<'menu' | 'cms' | 'gallery'>('menu');
 
   // Toast
   const [toast, setToast] = useState<string | null>(null);
@@ -217,6 +234,23 @@ export default function AdminPage() {
   const [processStats,    setProcessStats]    = useState<ProcessStats | null>(null);
   const [filterCat,       setFilterCat]       = useState<GalleryCategory | 'all'>('all');
 
+  // ── Stare CMS ──────────────────────────────────────────────────────────────
+  const [categories,    setCategories]    = useState<Category[]>([]);
+  const [products,      setProducts]      = useState<Product[]>([]);
+  const [cmsProdCat,    setCmsProdCat]    = useState<string>('');
+  const [showCatForm,   setShowCatForm]   = useState(false);
+  const [showProdForm,  setShowProdForm]  = useState(false);
+  const [editingCat,    setEditingCat]    = useState<Category | null>(null);
+  const [editingProd,   setEditingProd]   = useState<Product | null>(null);
+  const [catForm,       setCatForm]       = useState({
+    name: '', label: '', label_it: '', icon: '', sort_order: '1',
+  });
+  const [prodForm,      setProdForm]      = useState({
+    category_id: '', name: '', description: '', price: '', weight: '', badge: '', sub_title: '', sort_order: '1',
+  });
+  const [prodImageFile, setProdImageFile] = useState<File | null>(null);
+  const [cmsLoading,    setCmsLoading]    = useState(false);
+
   // ── Data fetchers ──────────────────────────────────────────────────────────
   const loadMenuItems = useCallback(async () => {
     const { data } = await supabase
@@ -234,6 +268,25 @@ export default function AdminPage() {
     if (data) setGalleryItems(data as GalleryItem[]);
   }, []);
 
+  const loadCategories = useCallback(async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (data) {
+      setCategories(data as Category[]);
+      if (data.length > 0 && !cmsProdCat) setCmsProdCat(data[0].name);
+    }
+  }, [cmsProdCat]);
+
+  const loadProducts = useCallback(async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (data) setProducts(data as Product[]);
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setSession(true);
@@ -244,12 +297,13 @@ export default function AdminPage() {
     if (session) {
       loadMenuItems();
       loadGalleryItems();
+      loadCategories();
+      loadProducts();
     }
-  }, [session, loadMenuItems, loadGalleryItems]);
+  }, [session, loadMenuItems, loadGalleryItems, loadCategories, loadProducts]);
 
   // ── Handlers MENIU ─────────────────────────────────────────────────────────
 
-  /** Upload imagine simplă pentru produsele din meniu. */
   const uploadMenuImage = async (file: File): Promise<string | null> => {
     const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
     const { error } = await supabase.storage.from(MENU_BUCKET).upload(fileName, file);
@@ -327,7 +381,6 @@ export default function AdminPage() {
     loadMenuItems();
   };
 
-  // ── Helpers inline edit ────────────────────────────────────────────────────
   const updateField = <K extends keyof MenuItem>(id: number, key: K, val: MenuItem[K]) => {
     setAllItems(prev => prev.map(i => i.id === id ? { ...i, [key]: val } : i));
     setModifiedIds(prev => new Set(prev).add(id));
@@ -406,10 +459,134 @@ export default function AdminPage() {
     loadGalleryItems();
   };
 
-  // ── Filtrare galerie ───────────────────────────────────────────────────────
   const filteredGallery = filterCat === 'all'
     ? galleryItems
     : galleryItems.filter(i => i.category === filterCat);
+
+  // ── Handlers CMS ───────────────────────────────────────────────────────────
+
+  const openCatForm = (cat?: Category) => {
+    if (cat) {
+      setEditingCat(cat);
+      setCatForm({
+        name:       cat.name,
+        label:      cat.label,
+        label_it:   cat.label_it ?? '',
+        icon:       cat.icon ?? '',
+        sort_order: String(cat.sort_order),
+      });
+    } else {
+      setEditingCat(null);
+      setCatForm({ name: '', label: '', label_it: '', icon: '', sort_order: String(categories.length + 1) });
+    }
+    setShowCatForm(true);
+    setShowProdForm(false);
+  };
+
+  const openProdForm = (prod?: Product) => {
+    if (prod) {
+      setEditingProd(prod);
+      setProdForm({
+        category_id: prod.category_id,
+        name:        prod.name,
+        description: prod.description,
+        price:       String(prod.price),
+        weight:      prod.weight ?? '',
+        badge:       prod.badge ?? '',
+        sub_title:   prod.sub_title ?? '',
+        sort_order:  String(prod.sort_order),
+      });
+    } else {
+      setEditingProd(null);
+      const catProducts = products.filter(p => p.category_id === cmsProdCat);
+      setProdForm({
+        category_id: cmsProdCat,
+        name: '', description: '', price: '', weight: '', badge: '', sub_title: '',
+        sort_order: String(catProducts.length + 1),
+      });
+    }
+    setProdImageFile(null);
+    setShowProdForm(true);
+    setShowCatForm(false);
+  };
+
+  const handleSaveCategory = async () => {
+    if (!catForm.name || !catForm.label) return showToast('SLUG ȘI LABEL SUNT OBLIGATORII');
+    setCmsLoading(true);
+    const payload = {
+      name:       catForm.name.toLowerCase().replace(/\s+/g, '_'),
+      label:      catForm.label,
+      label_it:   catForm.label_it || null,
+      icon:       catForm.icon || null,
+      sort_order: parseInt(catForm.sort_order) || 1,
+    };
+    const { error } = editingCat
+      ? await supabase.from('categories').update(payload).eq('id', editingCat.id)
+      : await supabase.from('categories').insert(payload);
+    if (!error) {
+      showToast(editingCat ? 'CATEGORIE ACTUALIZATĂ' : 'CATEGORIE ADĂUGATĂ');
+      setShowCatForm(false);
+      setEditingCat(null);
+      await loadCategories();
+    } else {
+      showToast('EROARE: ' + error.message);
+    }
+    setCmsLoading(false);
+  };
+
+  const handleDeleteCategory = async (id: number) => {
+    if (!confirm('Ștergi această categorie? Produsele asociate rămân în DB.')) return;
+    await supabase.from('categories').delete().eq('id', id);
+    showToast('CATEGORIE ELIMINATĂ');
+    loadCategories();
+  };
+
+  const handleSaveProduct = async () => {
+    if (!prodForm.name || !prodForm.price || !prodForm.category_id) {
+      return showToast('NUME, PREȚ ȘI CATEGORIE SUNT OBLIGATORII');
+    }
+    setCmsLoading(true);
+    let imageUrl: string | null = editingProd?.image_url ?? null;
+    if (prodImageFile) {
+      const uploaded = await uploadMenuImage(prodImageFile);
+      if (uploaded) imageUrl = uploaded;
+    }
+    const payload = {
+      category_id: prodForm.category_id,
+      name:        prodForm.name,
+      description: prodForm.description,
+      price:       parseFloat(prodForm.price),
+      weight:      prodForm.weight || null,
+      badge:       prodForm.badge || null,
+      sub_title:   prodForm.sub_title || null,
+      sort_order:  parseInt(prodForm.sort_order) || 1,
+      image_url:   imageUrl,
+    };
+    const { error } = editingProd
+      ? await supabase.from('products').update(payload).eq('id', editingProd.id)
+      : await supabase.from('products').insert(payload);
+    if (!error) {
+      showToast(editingProd ? 'PRODUS ACTUALIZAT' : 'PRODUS ADĂUGAT');
+      setShowProdForm(false);
+      setEditingProd(null);
+      setProdImageFile(null);
+      await loadProducts();
+    } else {
+      showToast('EROARE: ' + error.message);
+    }
+    setCmsLoading(false);
+  };
+
+  const handleDeleteCmsProduct = async (prod: Product) => {
+    if (!confirm('Ștergi definitiv acest produs?')) return;
+    if (prod.image_url) {
+      const fileName = prod.image_url.split('/').pop();
+      if (fileName) await supabase.storage.from(MENU_BUCKET).remove([fileName]);
+    }
+    await supabase.from('products').delete().eq('id', prod.id);
+    showToast('PRODUS ELIMINAT');
+    loadProducts();
+  };
 
   // ─── Ecran LOGIN ────────────────────────────────────────────────────────────
   if (!session) return (
@@ -461,22 +638,22 @@ export default function AdminPage() {
 
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-40 bg-white border-b px-6 py-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 flex-wrap">
           <span className="font-black text-lg tracking-tighter whitespace-nowrap">
             NAPOLETANO <span className="text-gray-400 font-light">ADMIN</span>
           </span>
 
           {/* Switcher secțiuni */}
           <div className="flex overflow-hidden border border-gray-200 rounded-lg">
-            {(['menu', 'gallery'] as const).map(v => (
+            {(['menu', 'cms', 'gallery'] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setActiveView(v)}
-                className={`text-[10px] font-black px-5 py-2 uppercase tracking-widest transition-all ${
+                className={`text-[10px] font-black px-4 py-2 uppercase tracking-widest transition-all ${
                   activeView === v ? 'bg-black text-white' : 'text-gray-400 hover:text-black'
                 }`}
               >
-                {v === 'menu' ? 'MENIU' : 'GALERIE MEDIA'}
+                {v === 'menu' ? 'MENIU' : v === 'cms' ? 'CMS' : 'GALERIE MEDIA'}
               </button>
             ))}
           </div>
@@ -531,7 +708,6 @@ export default function AdminPage() {
                       <option key={c} value={c}>{GALLERY_CATEGORY_LABELS[c]}</option>
                     ))}
                   </select>
-                  {/* Preview alt-text */}
                   <p className="text-[8px] text-gray-400 italic leading-tight">
                     Alt: &ldquo;{ALT_TEXT_MAP[galCat][galType]}&rdquo;
                   </p>
@@ -726,6 +902,426 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            SECȚIUNEA: CMS — CATEGORII + PRODUSE
+        ══════════════════════════════════════════════════════════════ */}
+        {activeView === 'cms' && (
+          <div className="space-y-8">
+
+            {/* Header luxury dark */}
+            <div className="bg-[#0d0d0d] rounded-2xl overflow-hidden">
+              {/* Tricolor accent — verde / alb / roșu (italian) */}
+              <div className="flex h-1">
+                <div className="flex-1 bg-[#009246]" />
+                <div className="flex-1 bg-white" />
+                <div className="flex-1 bg-[#ce2b37]" />
+              </div>
+              <div className="px-8 py-6 flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] tracking-[0.5em] uppercase text-white/40 mb-1">Admin · Meniu Special</p>
+                  <h2 className="font-display text-3xl md:text-4xl text-white tracking-wide">
+                    Gestiune Categorii &amp; Produse
+                  </h2>
+                </div>
+                <div className="text-right hidden md:block">
+                  <p className="text-[10px] uppercase tracking-widest text-white/30">
+                    {categories.length} categorii · {products.length} produse
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Layout 2 coloane */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+              {/* ── Coloana STÂNGA: CATEGORII ─────────────────────────────── */}
+              <div className="space-y-4">
+
+                {/* Header categorii */}
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-2xl tracking-wide text-[#0d0d0d]">Categorii</h3>
+                  <button
+                    onClick={() => openCatForm()}
+                    className="text-[10px] font-black uppercase tracking-widest bg-[#0d0d0d] text-white px-5 py-2.5 rounded-lg hover:bg-[#222] transition-all"
+                  >
+                    + Adaugă
+                  </button>
+                </div>
+
+                {/* Formular categorie inline */}
+                {showCatForm && (
+                  <div className="bg-[#0d0d0d] rounded-xl p-6 space-y-4 border border-white/10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
+                      {editingCat ? 'Editează Categorie' : 'Categorie Nouă'}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: 'Slug (cheie DB)', key: 'name',     placeholder: 'mic_dejun'       },
+                        { label: 'Label Română',    key: 'label',    placeholder: 'Mic Dejun'        },
+                        { label: 'Label Italiană',  key: 'label_it', placeholder: 'Prima Colazione'  },
+                        { label: 'Icon (emoji)',     key: 'icon',     placeholder: '🍳'              },
+                      ].map(f => (
+                        <div key={f.key} className="space-y-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">{f.label}</label>
+                          <input
+                            type="text"
+                            placeholder={f.placeholder}
+                            value={(catForm as Record<string, string>)[f.key]}
+                            onChange={e => setCatForm(p => ({ ...p, [f.key]: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                          />
+                        </div>
+                      ))}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Ordine (sort_order)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={catForm.sort_order}
+                          onChange={e => setCatForm(p => ({ ...p, sort_order: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={handleSaveCategory}
+                        disabled={cmsLoading}
+                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-cream-100 transition-all disabled:opacity-50"
+                      >
+                        {cmsLoading ? 'SE SALVEAZĂ...' : 'SALVEAZĂ'}
+                      </button>
+                      <button
+                        onClick={() => { setShowCatForm(false); setEditingCat(null); }}
+                        className="px-6 py-3 text-[10px] font-black uppercase tracking-widest border border-white/20 text-white/60 rounded-lg hover:border-white/40 transition-all"
+                      >
+                        ANULEAZĂ
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Lista categorii */}
+                <div className="space-y-2">
+                  {categories.length === 0 ? (
+                    <div className="border-2 border-dashed border-gray-100 rounded-xl py-12 text-center">
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-gray-300">
+                        NICIO CATEGORIE — ADAUGĂ PRIMA CATEGORIE
+                      </p>
+                    </div>
+                  ) : (
+                    categories.map(cat => (
+                      <div
+                        key={cat.id}
+                        className="flex items-center gap-3 p-4 bg-[#f7f5f0] rounded-xl border border-transparent hover:border-gray-200 transition-all group"
+                      >
+                        <span className="text-xl w-8 text-center">{cat.icon || '—'}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-black text-sm truncate">{cat.label}</p>
+                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">
+                            #{cat.sort_order} · <span className="font-mono">{cat.name}</span>
+                            {cat.label_it && <span className="ml-1 italic">· {cat.label_it}</span>}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <button
+                            onClick={() => openCatForm(cat)}
+                            className="text-[9px] font-black uppercase px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-black hover:text-white hover:border-black transition-all"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="text-[9px] font-black uppercase px-3 py-1.5 border border-red-200 text-red-400 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* ── Coloana DREAPTA: PRODUSE ──────────────────────────────── */}
+              <div className="space-y-4">
+
+                {/* Header produse */}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <h3 className="font-display text-2xl tracking-wide text-[#0d0d0d]">Produse</h3>
+                  <div className="flex gap-2 items-center">
+                    {categories.length > 0 && (
+                      <select
+                        value={cmsProdCat}
+                        onChange={e => setCmsProdCat(e.target.value)}
+                        className="text-[10px] font-black uppercase border border-gray-200 p-2 rounded-lg focus:outline-none focus:border-black bg-white"
+                      >
+                        {categories.map(c => (
+                          <option key={c.id} value={c.name}>{c.label}</option>
+                        ))}
+                      </select>
+                    )}
+                    <button
+                      onClick={() => openProdForm()}
+                      className="text-[10px] font-black uppercase tracking-widest bg-[#0d0d0d] text-white px-5 py-2.5 rounded-lg hover:bg-[#222] transition-all whitespace-nowrap"
+                    >
+                      + Adaugă
+                    </button>
+                  </div>
+                </div>
+
+                {/* Formular produs inline */}
+                {showProdForm && (
+                  <div className="bg-[#0d0d0d] rounded-xl p-6 space-y-4 border border-white/10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
+                      {editingProd ? 'Editează Produs' : 'Produs Nou'}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+
+                      {/* Categorie */}
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Categorie</label>
+                        <select
+                          value={prodForm.category_id}
+                          onChange={e => setProdForm(p => ({ ...p, category_id: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        >
+                          <option value="">— Alege categoria —</option>
+                          {categories.map(c => (
+                            <option key={c.id} value={c.name}>{c.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Nume */}
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Nume</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Spaghetti Carbonara"
+                          value={prodForm.name}
+                          onChange={e => setProdForm(p => ({ ...p, name: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      {/* Ingrediente → coloana description în DB */}
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                          Ingrediente <span className="text-white/20 normal-case">(scrie în coloana &ldquo;description&rdquo; din DB)</span>
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="Ex: Spaghetti, bacon, ou, parmezan, piper"
+                          value={prodForm.description}
+                          onChange={e => setProdForm(p => ({ ...p, description: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40 resize-none"
+                        />
+                      </div>
+
+                      {/* Grup / Sub-titlu */}
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                          Grup <span className="text-white/20 normal-case">(ex: PUI, PORC, VITĂ — scrie în coloana &ldquo;sub_title&rdquo; din DB)</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Ex: PUI"
+                          value={prodForm.sub_title}
+                          onChange={e => setProdForm(p => ({ ...p, sub_title: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      {/* Preț */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Preț (LEI)</label>
+                        <input
+                          type="number"
+                          placeholder="49"
+                          value={prodForm.price}
+                          onChange={e => setProdForm(p => ({ ...p, price: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      {/* Gramaj */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Gramaj</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: 250gr"
+                          value={prodForm.weight}
+                          onChange={e => setProdForm(p => ({ ...p, weight: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      {/* Badge */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Badge</label>
+                        <select
+                          value={prodForm.badge}
+                          onChange={e => setProdForm(p => ({ ...p, badge: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        >
+                          <option value="">Fără badge</option>
+                          <option value="new">Nouveauté</option>
+                          <option value="popular">Popular</option>
+                          <option value="top">Signature</option>
+                          <option value="hot">Intense</option>
+                          <option value="picant">Piquant</option>
+                        </select>
+                      </div>
+
+                      {/* Sort order */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Ordine</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={prodForm.sort_order}
+                          onChange={e => setProdForm(p => ({ ...p, sort_order: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      {/* Upload imagine */}
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Imagine (opțional)</label>
+                        <label className="flex items-center gap-3 w-full border border-dashed border-white/20 rounded-lg p-3 cursor-pointer hover:border-white/40 transition-all">
+                          <span className="text-[10px] font-bold uppercase text-white/50">
+                            {prodImageFile ? `✓ ${prodImageFile.name}` : '📸 Selectează imagine'}
+                          </span>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={e => setProdImageFile(e.target.files?.[0] || null)}
+                          />
+                        </label>
+                        {editingProd?.image_url && !prodImageFile && (
+                          <p className="text-[8px] text-white/30 italic">Imagine existentă va fi păstrată dacă nu selectezi alta.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={handleSaveProduct}
+                        disabled={cmsLoading}
+                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-cream-100 transition-all disabled:opacity-50"
+                      >
+                        {cmsLoading ? 'SE SALVEAZĂ...' : 'SALVEAZĂ PRODUSUL'}
+                      </button>
+                      <button
+                        onClick={() => { setShowProdForm(false); setEditingProd(null); }}
+                        className="px-6 py-3 text-[10px] font-black uppercase tracking-widest border border-white/20 text-white/60 rounded-lg hover:border-white/40 transition-all"
+                      >
+                        ANULEAZĂ
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Lista produse — grupate după sub_title, sortate după sort_order */}
+                {(() => {
+                  const filtered = products
+                    .filter(p => p.category_id === cmsProdCat)
+                    .sort((a, b) => {
+                      const ga = (a.sub_title ?? '').toLowerCase();
+                      const gb = (b.sub_title ?? '').toLowerCase();
+                      if (ga < gb) return -1;
+                      if (ga > gb) return 1;
+                      return a.sort_order - b.sort_order;
+                    });
+
+                  if (filtered.length === 0) return (
+                    <div className="border-2 border-dashed border-gray-100 rounded-xl py-12 text-center">
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-gray-300">
+                        {cmsProdCat
+                          ? `NICIUN PRODUS ÎN "${cmsProdCat.toUpperCase()}"`
+                          : 'SELECTEAZĂ O CATEGORIE'}
+                      </p>
+                    </div>
+                  );
+
+                  const rows: React.ReactNode[] = [];
+                  let lastGroup: string | null = undefined as unknown as null;
+
+                  filtered.forEach(prod => {
+                    const group = prod.sub_title ?? '';
+                    if (group !== lastGroup) {
+                      lastGroup = group;
+                      if (group) {
+                        rows.push(
+                          <div key={`grp-${group}`} className="flex items-center gap-3 pt-2 pb-1">
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 whitespace-nowrap">
+                              {group}
+                            </span>
+                            <div className="flex-1 h-px bg-gray-200" />
+                          </div>
+                        );
+                      }
+                    }
+                    rows.push(
+                      <div
+                        key={prod.id}
+                        className="flex items-center gap-3 p-4 bg-[#f7f5f0] rounded-xl border border-transparent hover:border-gray-200 transition-all group"
+                      >
+                        {prod.image_url ? (
+                          <img
+                            src={prod.image_url}
+                            alt={prod.name}
+                            className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-[9px] text-gray-400 font-bold">IMG</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-black text-sm truncate">{prod.name}</p>
+                            {prod.badge && (
+                              <span className="text-[7px] font-black uppercase px-1.5 py-0.5 bg-[#c0392b] text-white rounded">
+                                {prod.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">
+                            #{prod.sort_order} · {prod.price} lei
+                            {prod.weight && <span className="ml-1">· {prod.weight}</span>}
+                          </p>
+                          {prod.description && (
+                            <p className="text-[9px] text-gray-500 truncate mt-0.5">{prod.description}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                          <button
+                            onClick={() => openProdForm(prod)}
+                            className="text-[9px] font-black uppercase px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-black hover:text-white hover:border-black transition-all"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCmsProduct(prod)}
+                            className="text-[9px] font-black uppercase px-3 py-1.5 border border-red-200 text-red-400 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  });
+
+                  return <div className="space-y-1">{rows}</div>;
+                })()}
+              </div>
             </div>
           </div>
         )}
