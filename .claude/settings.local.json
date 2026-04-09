@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(cp \"C:/Users/NUstiuMa/Desktop/container poze/pozitia1.png\" \"C:/Users/NUstiuMa/Desktop/napoletano-new/public/nav-zones/restaurant.png\")",
+      "Bash(cp \"C:/Users/NUstiuMa/Desktop/container poze/pozitia2.png\" \"C:/Users/NUstiuMa/Desktop/napoletano-new/public/nav-zones/terasa.png\")",
+      "Bash(cp \"C:/Users/NUstiuMa/Desktop/container poze/pozitia 3.png\" \"C:/Users/NUstiuMa/Desktop/napoletano-new/public/nav-zones/evenimente.png\")",
+      "Bash(cp \"C:/Users/NUstiuMa/Desktop/container poze/pozitia4.png\" \"C:/Users/NUstiuMa/Desktop/napoletano-new/public/nav-zones/toate.png\")",
+      "Bash(curl -sk \"https://ebzvrpnngblxninmifee.supabase.co/rest/v1/gallery_items?category=eq.terasa&order=created_at.desc&limit=3&select=url,alt_text\" -H \"apikey: sb_publishable_BvlhuFtJ34ym4YlVXD1uuA_D8RyVwOO\" -H \"Authorization: Bearer sb_publishable_BvlhuFtJ34ym4YlVXD1uuA_D8RyVwOO\")"
     ]
   }
 }

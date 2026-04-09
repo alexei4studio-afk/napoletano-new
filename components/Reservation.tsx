@@ -110,17 +110,6 @@ export default function Reservation() {
               ))}
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 mt-2 border border-cream-300 px-4 py-2 w-fit"
-            >
-              <span className="text-base leading-none">🏳️‍🌈</span>
-              <span className="font-body text-xs tracking-widest uppercase text-charcoal-800/60">
-                LGBT+ Friendly
-              </span>
-            </motion.div>
           </div>
 
           {/* Dreapta: Formular */}
@@ -244,6 +233,12 @@ export default function Reservation() {
             <MapPin size={14} />
             Obține Direcții
           </a>
+          <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-cream-300 px-4 py-3 shadow-lg z-10">
+            <span className="text-base leading-none">🏳️‍🌈</span>
+            <span className="font-body text-xs tracking-widest uppercase text-charcoal-800/70">
+              LGBT+ Friendly
+            </span>
+          </div>
         </motion.div>
 
       </div>
