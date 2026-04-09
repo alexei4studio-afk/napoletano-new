@@ -1,10 +1,35 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, MenuItemRow } from '@/lib/supabaseClient'
-import { menuData } from '@/lib/menuData'
+import { supabase } from '@/lib/supabaseClient'
 import { Facebook, Instagram } from 'lucide-react'
+
+// ─── Tipuri ───────────────────────────────────────────────────────────────────
+
+interface Category {
+  id:         number
+  name:       string
+  label:      string
+  label_it:   string | null
+  icon:       string | null
+  sort_order: number
+}
+
+interface Product {
+  id:          number
+  category_id: string
+  name:        string
+  description: string
+  price:       number
+  weight:      string | null
+  badge:       string | null
+  sub_title:   string | null
+  sort_order:  number
+  image_url:   string | null
+}
+
+// ─── Constante design ─────────────────────────────────────────────────────────
 
 const TRICOLOR_TAB_STYLE = {
   background: 'linear-gradient(to right, #CE2B37 33.33%, #ffffff 33.33%, #ffffff 66.66%, #009246 66.66%)',
@@ -13,64 +38,158 @@ const TRICOLOR_TAB_STYLE = {
   display: 'inline-block',
 }
 
-const BADGE: Record<string, string> = {
-  Bestseller: 'bg-[#CE2B37] text-white',
-  Signature: 'bg-[#1C1A17] text-white',
-  Premium: 'bg-[#C9922A] text-white',
-  Picantă: 'bg-[#E85D1A] text-white',
-  Veggie: 'bg-[#009246] text-white',
-  Top: 'bg-[#9E1A23] text-white',
-  'Per 2': 'bg-[#2E2B25] text-white',
-  Clasic: 'bg-[#C9922A] text-white',
+// Badge DB value → { label, class }
+const BADGE_MAP: Record<string, { label: string; cls: string }> = {
+  new:     { label: 'Noutate',   cls: 'bg-[#009246] text-white' },
+  popular: { label: 'Popular',   cls: 'bg-[#CE2B37] text-white' },
+  top:     { label: 'Signature', cls: 'bg-[#1C1A17] text-white' },
+  hot:     { label: 'Intense',   cls: 'bg-[#E85D1A] text-white' },
+  picant:  { label: 'Piquant',   cls: 'bg-[#E85D1A] text-white' },
+  chef:    { label: 'Chef',      cls: 'bg-[#C9922A] text-white' },
 }
 
-function toMenuItem(row: MenuItemRow) {
-  return {
-    name: row.name,
-    nameIt: row.name_it ?? undefined,
-    ingredients: row.ingredients,
-    price: row.price,
-    weight: row.weight ?? undefined,
-    badge: row.badge ?? undefined,
+// ─── Grupare produse după sub_title ──────────────────────────────────────────
+
+function groupProducts(products: Product[]): { sub_title: string | null; items: Product[] }[] {
+  const sorted = [...products].sort((a, b) => {
+    const ga = a.sub_title ?? ''
+    const gb = b.sub_title ?? ''
+    if (ga < gb) return -1
+    if (ga > gb) return 1
+    return a.sort_order - b.sort_order
+  })
+
+  const groups: { sub_title: string | null; items: Product[] }[] = []
+  let lastGroup: string | null | undefined = undefined
+
+  for (const prod of sorted) {
+    const g = prod.sub_title ?? null
+    if (g !== lastGroup) {
+      lastGroup = g
+      groups.push({ sub_title: g, items: [] })
+    }
+    groups[groups.length - 1].items.push(prod)
   }
+
+  return groups
 }
+
+// ─── Card produs ─────────────────────────────────────────────────────────────
+
+function ProductCard({ item, idx }: { item: Product; idx: number }) {
+  const badge = item.badge ? BADGE_MAP[item.badge] : null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: Math.min(idx * 0.04, 0.4) }}
+      className="bg-white border border-[#E8E0D5] p-6 hover:shadow-md transition-shadow duration-300"
+    >
+      {/* Imagine produs (opțional) */}
+      {item.image_url && (
+        <div className="mb-4 -mx-6 -mt-6 overflow-hidden h-40">
+          <img
+            src={item.image_url}
+            alt={item.name}
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          />
+        </div>
+      )}
+
+      <div className="flex items-start justify-between gap-3 mb-1">
+        <p className="font-display text-[1.2rem] font-light text-[#1C1A17] leading-tight">
+          {item.name}
+        </p>
+        {badge && (
+          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 flex-shrink-0 ${badge.cls}`}>
+            {badge.label}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3 my-[0.6rem]">
+        <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" />
+        <span className="font-display text-[1.45rem] font-light text-[#1C1A17]">
+          {item.price > 0 ? item.price : '—'}
+        </span>
+        <span className="text-[11px] text-[#8C7E65] font-body">lei</span>
+      </div>
+
+      {item.description && (
+        <p className="text-[13px] font-body font-light text-[#3D3428] leading-[1.7]">
+          {item.description}
+        </p>
+      )}
+
+      {item.weight && (
+        <p className="mt-3 text-[10px] tracking-[0.2em] uppercase font-body text-[#8C7E65]">
+          {item.weight}
+        </p>
+      )}
+    </motion.div>
+  )
+}
+
+// ─── Componenta principală ────────────────────────────────────────────────────
 
 export default function Menu() {
-  const [activeCategory, setActiveCategory] = useState('pizza')
-  const [itemsCache, setItemsCache] = useState<Record<string, ReturnType<typeof toMenuItem>[]>>({})
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [categories,    setCategories]    = useState<Category[]>([])
+  const [activeId,      setActiveId]      = useState<string>('')
+  const [productsCache, setProductsCache] = useState<Record<string, Product[]>>({})
+  const [loading,       setLoading]       = useState(false)
+  const [catLoading,    setCatLoading]    = useState(true)
+  const [error,         setError]         = useState<string | null>(null)
 
-  const activeItems = itemsCache[activeCategory]
-
+  // Încarcă categoriile la mount
   useEffect(() => {
-    if (itemsCache[activeCategory]) return
+    supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .then(({ data, error: err }) => {
+        setCatLoading(false)
+        if (err || !data || data.length === 0) return
+        const cats = data as Category[]
+        setCategories(cats)
+        setActiveId(cats[0].name)
+      })
+  }, [])
+
+  // Încarcă produse pentru categoria activă (cu cache)
+  const loadProducts = useCallback((categoryId: string) => {
+    if (!categoryId) return
+    if (productsCache[categoryId]) return
     setLoading(true)
     setError(null)
     supabase
-      .from('menu_items')
+      .from('products')
       .select('*')
-      .eq('category_id', activeCategory)
-      .order('sort_order', { ascending: true })
+      .eq('category_id', categoryId)
       .then(({ data, error: err }) => {
         setLoading(false)
         if (err || !data) {
           setError('Eroare la încărcarea meniului. Reîncarcă pagina.')
           return
         }
-        setItemsCache((prev) => ({
-          ...prev,
-          [activeCategory]: (data as MenuItemRow[]).map(toMenuItem),
-        }))
+        setProductsCache(prev => ({ ...prev, [categoryId]: data as Product[] }))
       })
-  }, [activeCategory])
+  }, [productsCache])
 
-  const items = activeItems ?? []
+  useEffect(() => {
+    loadProducts(activeId)
+  }, [activeId, loadProducts])
+
+  const activeProducts = productsCache[activeId] ?? []
+  const groups = groupProducts(activeProducts)
+  const hasGroups = groups.some(g => g.sub_title !== null)
+
+  const activeCategory = categories.find(c => c.name === activeId)
 
   return (
     <section id="meniu" className="py-0">
 
-      {/* ── HEADER DARK (RESTAURAT IDENTIC) ────────────────────────────────── */}
+      {/* ── HEADER DARK ─────────────────────────────────────────────────────── */}
       <div className="relative bg-[#1C1A17] text-center px-4 pt-10 pb-8">
 
         {/* Tricolor sus */}
@@ -80,9 +199,8 @@ export default function Menu() {
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
 
-        {/* Social + Delivery (Icons REPUSE LA LOC) */}
+        {/* Social + Delivery */}
         <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
-
           <div className="flex items-center gap-6">
             <a href="https://www.facebook.com/ventonapoletano" target="_blank" rel="noopener noreferrer" className="text-[#1877F2]/50 hover:text-[#1877F2] transition-all duration-300">
               <Facebook size={20} />
@@ -97,7 +215,6 @@ export default function Menu() {
 
           <div className="hidden sm:block w-px h-5 bg-white/15" />
 
-          {/* Delivery Icons CU LINK-URI */}
           <div className="flex items-center gap-6">
             <a href="https://wolt.com/ro/ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08" target="_blank" title="Wolt" className="text-[#009DE0]/50 hover:text-[#009DE0] transition-all duration-300">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 6L4.8 14L7 8.5L10 14L12.2 6L14.5 11.5L17 6" /></svg>
@@ -129,36 +246,58 @@ export default function Menu() {
         </motion.p>
       </div>
 
-      {/* ── TABS ──────────────────────────────────────────────── */}
+      {/* ── TABS ─────────────────────────────────────────────────────────────── */}
       <div className="bg-[#2E2B25] border-b-[3px] border-[#CE2B37] px-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center">
-          {menuData.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`relative flex items-center gap-2 px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
-                activeCategory === cat.id
-                  ? 'text-white border-[#CE2B37]'
-                  : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
-              }`}
-            >
-              <span>{cat.icon}</span>
-              <span style={TRICOLOR_TAB_STYLE}>
-                {cat.label}
-              </span>
-            </button>
-          ))}
+          {catLoading ? (
+            // Skeleton tabs
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="px-4 py-4 w-20 animate-pulse">
+                <div className="h-2 bg-white/10 rounded" />
+              </div>
+            ))
+          ) : (
+            categories.map(cat => (
+              <button
+                key={cat.name}
+                onClick={() => setActiveId(cat.name)}
+                className={`relative flex items-center gap-2 px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
+                  activeId === cat.name
+                    ? 'text-white border-[#CE2B37]'
+                    : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
+                }`}
+              >
+                {cat.icon && <span>{cat.icon}</span>}
+                <span style={TRICOLOR_TAB_STYLE}>{cat.label}</span>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
-      {/* ── CONTENT ───────────────────────────────────────────── */}
+      {/* ── CONTENT ──────────────────────────────────────────────────────────── */}
       <div className="bg-[#FAF7F2] min-h-[400px] px-4 py-12">
         <div className="max-w-7xl mx-auto">
 
+          {/* Titlu categorie curentă */}
+          {activeCategory && !loading && (
+            <div className="text-center mb-10">
+              <p className="font-display text-4xl md:text-5xl font-light text-[#1C1A17]">
+                {activeCategory.label}
+              </p>
+              {activeCategory.label_it && (
+                <p className="text-[12px] italic text-[#8C7E65] font-body tracking-widest mt-1">
+                  {activeCategory.label_it}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Loading spinner */}
           {loading && (
             <div className="flex justify-center py-20">
               <div className="flex gap-1.5">
-                {[0, 1, 2].map((i) => (
+                {[0, 1, 2].map(i => (
                   <motion.div
                     key={i}
                     className="w-2 h-2 rounded-full bg-[#CE2B37]"
@@ -175,71 +314,65 @@ export default function Menu() {
           )}
 
           <AnimatePresence mode="wait">
-            {!loading && !error && (
+            {!loading && !error && activeProducts.length > 0 && (
               <motion.div
-                key={activeCategory}
+                key={activeId}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {items.map((item, idx) => (
-                    <motion.div
-                      key={item.name}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, delay: idx * 0.04 }}
-                      className="bg-white border border-[#E8E0D5] p-6 hover:shadow-md transition-shadow duration-300"
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-1">
-                        <div>
-                          <p className="font-display text-[1.2rem] font-light text-[#1C1A17] leading-tight">
-                            {item.name}
-                          </p>
-                          {item.nameIt && (
-                            <p className="text-[11px] italic text-[#8C7E65] font-body mt-0.5">
-                              {item.nameIt}
-                            </p>
-                          )}
-                        </div>
-                        {item.badge && (
-                          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 flex-shrink-0 ${
-                            BADGE[item.badge] ?? 'bg-gray-200 text-gray-700'
-                          }`}>
-                            {item.badge}
-                          </span>
+                  {hasGroups ? (
+                    // ── Redare cu grupuri (sub_title headers) ───────────────
+                    groups.map((group, gIdx) => (
+                      <>
+                        {/* Separator grup */}
+                        {group.sub_title && (
+                          <div
+                            key={`sep-${group.sub_title}`}
+                            className={`col-span-full flex items-center gap-4 ${gIdx === 0 ? 'mb-2' : 'mt-8 mb-2'}`}
+                          >
+                            <div className="h-px flex-1 bg-[#CE2B37]/25" />
+                            <span className="font-display text-xl italic font-light text-[#8C7E65] tracking-[0.25em] whitespace-nowrap">
+                              {group.sub_title.charAt(0).toUpperCase() + group.sub_title.slice(1).toLowerCase()}
+                            </span>
+                            <div className="h-px flex-1 bg-[#CE2B37]/25" />
+                          </div>
                         )}
-                      </div>
-
-                      <div className="flex items-center gap-3 my-[0.6rem]">
-                        <div className="flex-1 border-b border-dashed border-[#CE2B37]/20" />
-                        <span className="font-display text-[1.45rem] font-light text-[#1C1A17]">
-                          {item.price}
-                        </span>
-                        <span className="text-[11px] text-[#8C7E65] font-body">lei</span>
-                      </div>
-
-                      <p className="text-[13px] font-body font-light text-[#3D3428] leading-[1.7]">
-                        {item.ingredients}
-                      </p>
-
-                      {item.weight && (
-                        <p className="mt-3 text-[10px] tracking-[0.2em] uppercase font-body text-[#8C7E65]">
-                          Gramaj: {item.weight}
-                        </p>
-                      )}
-                    </motion.div>
-                  ))}
+                        {/* Carduri grup */}
+                        {group.items.map((item, idx) => (
+                          <ProductCard key={item.id} item={item} idx={idx} />
+                        ))}
+                      </>
+                    ))
+                  ) : (
+                    // ── Redare simplă fără grupuri ───────────────────────────
+                    activeProducts.map((item, idx) => (
+                      <ProductCard key={item.id} item={item} idx={idx} />
+                    ))
+                  )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Mesaj gol */}
+          {!loading && !error && activeProducts.length === 0 && activeId && (
+            <div className="text-center py-20">
+              <p className="text-[#8C7E65] font-body text-sm tracking-widest uppercase">
+                Meniu în pregătire
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Tricolor jos */}
       <div className="flex h-[6px]">
-        <div className="flex-1 bg-[#CE2B37]" /><div className="flex-1 bg-white" /><div className="flex-1 bg-[#009246]" />
+        <div className="flex-1 bg-[#CE2B37]" />
+        <div className="flex-1 bg-white" />
+        <div className="flex-1 bg-[#009246]" />
       </div>
     </section>
   )
