@@ -260,13 +260,13 @@ export default function Menu() {
               <button
                 key={cat.id}
                 onClick={() => setActiveId(String(cat.id))}
-                className={`relative flex items-center gap-2 px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
+                className={`relative px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
                   activeId === String(cat.id)
                     ? 'text-white border-[#CE2B37]'
                     : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
                 }`}
               >
-                <span style={TRICOLOR_TAB_STYLE}>{cat.label}</span>
+                {cat.label}
               </button>
             ))
           )}
