@@ -264,11 +264,18 @@ export default function Menu() {
                 onClick={() => setActiveId(String(cat.id))}
                 className={`relative px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
                   activeId === String(cat.id)
-                    ? 'border-[#CE2B37]'
-                    : 'opacity-40 border-transparent hover:opacity-70 hover:border-white/20'
+                    ? 'text-white border-[#CE2B37]'
+                    : 'text-white/50 border-transparent hover:text-white/80 hover:border-white/20'
                 }`}
               >
-                <span style={TRICOLOR_TAB_STYLE}>{cat.label || cat.name}</span>
+                {cat.label || cat.name}
+                {activeId === String(cat.id) && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 flex h-[3px] w-8 -mb-[3px]">
+                    <span className="flex-1 bg-[#009246]" />
+                    <span className="flex-1 bg-white" />
+                    <span className="flex-1 bg-[#CE2B37]" />
+                  </span>
+                )}
               </button>
             ))
           )}
