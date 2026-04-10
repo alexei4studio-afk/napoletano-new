@@ -12,7 +12,6 @@ interface Category {
   name:       string
   label:      string
   label_it:   string | null
-  icon:       string | null
   sort_order: number
 }
 
@@ -152,7 +151,7 @@ export default function Menu() {
         if (err || !data || data.length === 0) return
         const cats = data as Category[]
         setCategories(cats)
-        setActiveId(cats[0].name)
+        setActiveId(String(cats[0].id))
       })
   }, [])
 
@@ -165,7 +164,7 @@ export default function Menu() {
     supabase
       .from('products')
       .select('*')
-      .eq('category_id', categoryId)
+      .eq('category_id', parseInt(categoryId))
       .then(({ data, error: err }) => {
         setLoading(false)
         if (err || !data) {
@@ -184,7 +183,7 @@ export default function Menu() {
   const groups = groupProducts(activeProducts)
   const hasGroups = groups.some(g => g.sub_title !== null)
 
-  const activeCategory = categories.find(c => c.name === activeId)
+  const activeCategory = categories.find(c => String(c.id) === activeId)
 
   return (
     <section id="meniu" className="py-0">
@@ -259,15 +258,14 @@ export default function Menu() {
           ) : (
             categories.map(cat => (
               <button
-                key={cat.name}
-                onClick={() => setActiveId(cat.name)}
+                key={cat.id}
+                onClick={() => setActiveId(String(cat.id))}
                 className={`relative flex items-center gap-2 px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
-                  activeId === cat.name
+                  activeId === String(cat.id)
                     ? 'text-white border-[#CE2B37]'
                     : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
                 }`}
               >
-                {cat.icon && <span>{cat.icon}</span>}
                 <span style={TRICOLOR_TAB_STYLE}>{cat.label}</span>
               </button>
             ))
