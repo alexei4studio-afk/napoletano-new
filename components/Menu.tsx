@@ -33,7 +33,9 @@ interface Product {
 const TRICOLOR_TAB_STYLE = {
   background: 'linear-gradient(to right, #CE2B37 33.33%, #ffffff 33.33%, #ffffff 66.66%, #009246 66.66%)',
   WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
+  color: 'transparent',
   display: 'inline-block',
 }
 
@@ -262,11 +264,11 @@ export default function Menu() {
                 onClick={() => setActiveId(String(cat.id))}
                 className={`relative px-4 py-4 text-[11px] tracking-[0.18em] uppercase font-bold transition-all duration-200 border-b-[3px] -mb-[3px] ${
                   activeId === String(cat.id)
-                    ? 'text-white border-[#CE2B37]'
-                    : 'text-white/40 border-transparent hover:text-white/70 hover:border-white/20'
+                    ? 'border-[#CE2B37]'
+                    : 'opacity-40 border-transparent hover:opacity-70 hover:border-white/20'
                 }`}
               >
-                {cat.label}
+                <span style={TRICOLOR_TAB_STYLE}>{cat.label || cat.name}</span>
               </button>
             ))
           )}
@@ -281,7 +283,7 @@ export default function Menu() {
           {activeCategory && !loading && (
             <div className="text-center mb-10">
               <p className="font-display text-4xl md:text-5xl font-light text-[#1C1A17]">
-                {activeCategory.label}
+                {activeCategory.label || activeCategory.name}
               </p>
               {activeCategory.label_it && (
                 <p className="text-[12px] italic text-[#8C7E65] font-body tracking-widest mt-1">
