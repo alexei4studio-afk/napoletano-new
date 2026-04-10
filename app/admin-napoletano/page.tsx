@@ -64,7 +64,6 @@ interface Category {
   name:       string;
   label:      string;
   label_it:   string | null;
-  icon:       string | null;
   sort_order: number;
 }
 
@@ -208,7 +207,7 @@ export default function AdminPage() {
   const [editingCat,    setEditingCat]    = useState<Category | null>(null);
   const [editingProd,   setEditingProd]   = useState<Product | null>(null);
   const [catForm,       setCatForm]       = useState({
-    name: '', label: '', label_it: '', icon: '', sort_order: '1',
+    name: '', label: '', label_it: '', sort_order: '1',
   });
   const [prodForm,      setProdForm]      = useState({
     category_id: '', name: '', description: '', price: '', weight: '', badge: '', sub_title: '', sort_order: '1',
@@ -353,12 +352,11 @@ export default function AdminPage() {
         name:       cat.name,
         label:      cat.label,
         label_it:   cat.label_it ?? '',
-        icon:       cat.icon ?? '',
         sort_order: String(cat.sort_order),
       });
     } else {
       setEditingCat(null);
-      setCatForm({ name: '', label: '', label_it: '', icon: '', sort_order: String(categories.length + 1) });
+      setCatForm({ name: '', label: '', label_it: '', sort_order: String(categories.length + 1) });
     }
     setShowCatForm(true);
     setShowProdForm(false);
@@ -398,7 +396,6 @@ export default function AdminPage() {
       name:       catForm.name.toLowerCase().replace(/\s+/g, '_'),
       label:      catForm.label,
       label_it:   catForm.label_it || null,
-      icon:       catForm.icon || null,
       sort_order: parseInt(catForm.sort_order) || 1,
     };
     const { error } = editingCat
@@ -844,7 +841,6 @@ export default function AdminPage() {
                         { label: 'Slug (cheie DB)', key: 'name',     placeholder: 'mic_dejun'       },
                         { label: 'Label Română',    key: 'label',    placeholder: 'Mic Dejun'        },
                         { label: 'Label Italiană',  key: 'label_it', placeholder: 'Prima Colazione'  },
-                        { label: 'Icon (emoji)',     key: 'icon',     placeholder: '🍳'              },
                       ].map(f => (
                         <div key={f.key} className="space-y-1">
                           <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">{f.label}</label>
@@ -898,20 +894,24 @@ export default function AdminPage() {
                     categories.map(cat => (
                       <div
                         key={cat.id}
-                        className="flex items-center gap-3 p-4 bg-[#f7f5f0] rounded-xl border border-transparent hover:border-gray-200 transition-all group"
+                        onClick={() => setCmsProdCat(String(cat.id))}
+                        className={`flex items-center gap-3 p-4 rounded-xl border transition-all group cursor-pointer ${
+                          cmsProdCat === String(cat.id)
+                            ? 'bg-[#0d0d0d] border-[#0d0d0d]'
+                            : 'bg-[#f7f5f0] border-transparent hover:border-gray-200'
+                        }`}
                       >
-                        <span className="text-xl w-8 text-center">{cat.icon || '—'}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="font-black text-sm truncate">{cat.label}</p>
-                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">
+                          <p className={`font-black text-sm truncate ${cmsProdCat === String(cat.id) ? 'text-white' : ''}`}>{cat.label}</p>
+                          <p className={`text-[9px] uppercase tracking-widest ${cmsProdCat === String(cat.id) ? 'text-white/50' : 'text-gray-400'}`}>
                             #{cat.sort_order} · <span className="font-mono">{cat.name}</span>
                             {cat.label_it && <span className="ml-1 italic">· {cat.label_it}</span>}
                           </p>
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => openCatForm(cat)}
-                            className="text-[9px] font-black uppercase px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-black hover:text-white hover:border-black transition-all"
+                            className={`text-[9px] font-black uppercase px-3 py-1.5 border rounded-lg transition-all ${cmsProdCat === String(cat.id) ? 'border-white/30 text-white hover:bg-white hover:text-black' : 'border-gray-300 hover:bg-black hover:text-white hover:border-black'}`}
                           >
                             ✎
                           </button>
