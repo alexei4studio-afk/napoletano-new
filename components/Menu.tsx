@@ -52,13 +52,7 @@ const BADGE_MAP: Record<string, { label: string; cls: string }> = {
 // ─── Grupare produse după sub_title ──────────────────────────────────────────
 
 function groupProducts(products: Product[]): { sub_title: string | null; items: Product[] }[] {
-  const sorted = [...products].sort((a, b) => {
-    const ga = a.sub_title ?? ''
-    const gb = b.sub_title ?? ''
-    if (ga < gb) return -1
-    if (ga > gb) return 1
-    return a.sort_order - b.sort_order
-  })
+  const sorted = [...products].sort((a, b) => a.sort_order - b.sort_order)
 
   const groups: { sub_title: string | null; items: Product[] }[] = []
   let lastGroup: string | null | undefined = undefined
@@ -167,6 +161,7 @@ export default function Menu() {
       .from('products')
       .select('*')
       .eq('category_id', parseInt(categoryId))
+      .order('sort_order', { ascending: true })
       .then(({ data, error: err }) => {
         setLoading(false)
         if (err || !data) {
