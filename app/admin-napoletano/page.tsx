@@ -332,9 +332,14 @@ export default function AdminPage() {
 
   const handleDeleteGalleryItem = async (item: GalleryItem) => {
     if (!confirm('Ștergi definitiv acest fișier din galerie?')) return;
-    const fileName = item.url.split('/').pop();
-    if (fileName) await supabase.storage.from(GALLERY_BUCKET).remove([fileName]);
-    await supabase.from('gallery_items').delete().eq('id', item.id);
+    const storagePath = item.url.split(`/storage/v1/object/public/${GALLERY_BUCKET}/`)[1];
+    if (storagePath) {
+      const { error: storageErr } = await supabase.storage.from(GALLERY_BUCKET).remove([storagePath]);
+      if (storageErr) { showToast(`EROARE STORAGE: ${storageErr.message}`); return; }
+    }
+    const { data: deleted, error: dbErr } = await supabase.from('gallery_items').delete().eq('id', item.id).select();
+    if (dbErr) { showToast(`EROARE DB: ${dbErr.message}`); return; }
+    if (!deleted || deleted.length === 0) { showToast('BLOCAT RLS — rulează în Supabase SQL: ALTER TABLE gallery_items DISABLE ROW LEVEL SECURITY;'); return; }
     showToast('ELEMENT ELIMINAT');
     loadGalleryItems();
   };
@@ -970,6 +975,7 @@ export default function AdminPage() {
                           value={prodForm.category_id}
                           onChange={e => setProdForm(p => ({ ...p, category_id: e.target.value }))}
                           className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                          style={{ colorScheme: 'dark' }}
                         >
                           <option value="">— Alege categoria —</option>
                           {categories.map(c => (
