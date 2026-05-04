@@ -1,0 +1,7 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - paragraph [ref=e8]: Pizzerie Napoletană · București
+    - heading "Napoletano" [level=1] [ref=e9]
+    - paragraph [ref=e10]: L'Arte della Pizza Napoletana
+  - link "← Vizitează site-ul complet" [ref=e35] [cursor=pointer]:
+    - /url: /

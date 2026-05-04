@@ -1,0 +1,377 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]: Vii tu la noi? Îți mulțumim cu 10% reducere la orice comandă cu pick-up 🍕
+  - main [ref=e3]:
+    - generic [ref=e6]:
+      - link "NAPOLETANO Pizzeria Napoletana" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: NAPOLETANO
+        - generic [ref=e9]: Pizzeria Napoletana
+      - navigation [ref=e10]:
+        - link "Meniu" [ref=e11] [cursor=pointer]:
+          - /url: "#meniu"
+        - link "Oferte" [ref=e12] [cursor=pointer]:
+          - /url: "#evenimente"
+        - link "Povestea Noastră" [ref=e13] [cursor=pointer]:
+          - /url: "#poveste"
+        - link "Galerie" [ref=e14] [cursor=pointer]:
+          - /url: /galerie-napoletano
+        - link "Contact" [ref=e15] [cursor=pointer]:
+          - /url: "#contact"
+      - generic [ref=e16]:
+        - link "0731 333 112" [ref=e17] [cursor=pointer]:
+          - /url: tel:+40731333112
+          - img [ref=e18]
+          - generic [ref=e20]: 0731 333 112
+        - link "Rezervă Masă" [ref=e21] [cursor=pointer]:
+          - /url: "#rezervare"
+    - generic [ref=e22]:
+      - generic [ref=e28]: Napoli · 1889 · Autentico
+      - generic [ref=e30]:
+        - generic [ref=e33]: Pizzeria Napoletana · București
+        - heading "L'Arte della Pizza Napoletana" [level=1] [ref=e35]:
+          - text: L'Arte della
+          - emphasis [ref=e36]: Pizza Napoletana
+        - paragraph [ref=e37]: Tradiție napolitană autentică. Ingrediente importate din Italia. Cuptor cu lemne. Rețete de peste 130 de ani.
+        - generic [ref=e38]:
+          - link "Rezervă Masă" [ref=e39] [cursor=pointer]:
+            - /url: "#rezerva"
+          - link "Vezi Meniu" [ref=e40] [cursor=pointer]:
+            - /url: "#meniu"
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - img [ref=e43]
+            - text: Ion Nonna Otescu nr. 2, Sector 6
+          - generic [ref=e46]:
+            - img [ref=e47]
+            - text: 0731 333 112
+          - generic [ref=e49]:
+            - img [ref=e50]
+            - text: "Lun–Joi: 12–23 · Vin–Dum: 12–00"
+      - generic [ref=e53]:
+        - generic [ref=e54]: Descoperă
+        - img [ref=e56]
+    - generic [ref=e59]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - link [ref=e66] [cursor=pointer]:
+            - /url: https://www.facebook.com/ventonapoletano
+            - img [ref=e67]
+          - link [ref=e69] [cursor=pointer]:
+            - /url: https://www.instagram.com/ventonapoletano
+            - img [ref=e70]
+          - link [ref=e73] [cursor=pointer]:
+            - /url: https://www.tiktok.com/@ventonapoletano
+            - img [ref=e74]
+        - generic [ref=e77]:
+          - link "Wolt" [ref=e78] [cursor=pointer]:
+            - /url: https://wolt.com/ro/ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08
+            - img [ref=e79]
+          - link "Glovo" [ref=e81] [cursor=pointer]:
+            - /url: https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc
+            - img [ref=e82]
+          - link "Bolt Food" [ref=e85] [cursor=pointer]:
+            - /url: https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/
+            - img [ref=e86]
+      - paragraph [ref=e92]: Cucina Napoletana · București
+      - heading "Il Nostro Menù" [level=2] [ref=e93]
+      - paragraph [ref=e94]: Ingrediente DOP din Italia · Aluat dospit 72 ore · Cuptor cu lemne 450°C
+    - generic [ref=e118]:
+      - generic [ref=e119]:
+        - paragraph [ref=e120]: La Nostra Storia
+        - heading "O rețetă veche de 130 de ani, în inima Bucureștiului." [level=2] [ref=e121]:
+          - text: O rețetă veche
+          - emphasis [ref=e122]: de 130 de ani,
+          - text: în inima Bucureștiului.
+        - generic [ref=e123]:
+          - paragraph [ref=e124]: Pizza napoletană nu este un simplu preparat — este o artă recunoscută de UNESCO ca patrimoniu cultural imaterial al umanității. La Napoletano, aducem această tradiție în București cu respect absolut față de rețetele originale.
+          - paragraph [ref=e125]: Aluatul nostru dospit timp de 72 de ore din făină tip "00" importată din Campania, sosul de roșii San Marzano DOP și mozzarella fior di latte de calitate superioară — toate coapte în 90 de secunde la 450°C în cuptorul nostru cu lemne.
+          - paragraph [ref=e126]: Fiecare pizza este o declarație de dragoste față de Napoli, frământată cu mâinile și coaptă cu sufletul.
+        - generic [ref=e129]: Maestrul Pizzaiolo
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - paragraph [ref=e133]: 130+
+            - paragraph [ref=e134]: Ani de tradiție
+          - generic [ref=e135]:
+            - paragraph [ref=e136]: 72h
+            - paragraph [ref=e137]: Dospit aluatul
+          - generic [ref=e138]:
+            - paragraph [ref=e139]: 450°
+            - paragraph [ref=e140]: Cuptor cu lemne
+          - generic [ref=e141]:
+            - paragraph [ref=e142]: 100%
+            - paragraph [ref=e143]: Ingrediente DOP
+        - generic [ref=e144]:
+          - img "Pizzaiolo napoletano" [ref=e145]
+          - paragraph [ref=e148]: Ion Nonna Otescu nr. 2, Sector 6, București
+    - generic [ref=e150]:
+      - generic [ref=e151]:
+        - paragraph [ref=e152]: Galerie Foto
+        - heading "La Nostra Cucina" [level=2] [ref=e153]
+      - generic [ref=e154]:
+        - link "Interior restaurant Napoletano București" [ref=e156] [cursor=pointer]:
+          - /url: /galerie-napoletano?category=restaurant
+          - img "Interior restaurant Napoletano București" [ref=e157]
+        - link "Terasă restaurant Napoletano" [ref=e160] [cursor=pointer]:
+          - /url: /galerie-napoletano?category=terasa
+          - img "Terasă restaurant Napoletano" [ref=e161]
+        - link "Evenimente private Napoletano" [ref=e164] [cursor=pointer]:
+          - /url: /galerie-napoletano?category=evenimente
+          - img "Evenimente private Napoletano" [ref=e165]
+        - link "Galerie completă Napoletano" [ref=e168] [cursor=pointer]:
+          - /url: /galerie-napoletano
+          - img "Galerie completă Napoletano" [ref=e169]
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - heading "Evenimente & Atmosferă" [level=2] [ref=e174]
+        - paragraph [ref=e179]: Organizează-ți momentul special pe terasa noastră primitoare din inima Bucureștiului.
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - img [ref=e183]
+          - heading "Capacitate 35 Persoane" [level=3] [ref=e188]
+          - paragraph [ref=e189]: Spațiu intim și primitor, perfect pentru grupuri și evenimente private.
+        - generic [ref=e190]:
+          - img [ref=e192]
+          - heading "Muzică Ambientală" [level=3] [ref=e196]
+          - paragraph [ref=e197]: Playlisturi curatoriate pentru un vibe autentic italienesc.
+        - generic [ref=e198]:
+          - img [ref=e200]
+          - heading "Meniu 100% Italian" [level=3] [ref=e203]
+          - paragraph [ref=e204]: Pizza pe vatră, paste artizanale și deserturi delicioase.
+        - generic [ref=e205]:
+          - img [ref=e207]
+          - heading "Terasă Primitoare" [level=3] [ref=e213]
+          - paragraph [ref=e214]: Locul ideal pentru a savura o experiență culinară relaxată.
+      - generic [ref=e215]:
+        - generic [ref=e216]:
+          - heading "Vrei să rezervi întreaga terasă?" [level=3] [ref=e217]
+          - paragraph [ref=e218]: Suntem aici să facem din evenimentul tău o experiență memorabilă cu arome napoletane.
+          - 'link "Cere o ofertă: 0731 333 112" [ref=e219] [cursor=pointer]':
+            - /url: tel:0731333112
+        - generic: 🇮🇹
+    - generic [ref=e221]:
+      - generic [ref=e222]:
+        - paragraph [ref=e223]: Ce spun clienții noștri
+        - heading "Recenzii Autentice" [level=2] [ref=e224]
+      - generic [ref=e225]:
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - generic [ref=e228]: ★
+            - generic [ref=e229]: ★
+            - generic [ref=e230]: ★
+            - generic [ref=e231]: ★
+            - generic [ref=e232]: ★
+          - paragraph [ref=e233]: "\""
+          - paragraph [ref=e234]: Cea mai bună pizza napoletană din București. Aluatul este incredibil — ușor, aromat, exact ca în Napoli. Burrata e proaspătă și calitatea ingredientelor se simte la fiecare mușcătură.
+          - generic [ref=e235]:
+            - paragraph [ref=e236]: Andrei M.
+            - paragraph [ref=e237]: Google Reviews
+        - generic [ref=e238]:
+          - generic [ref=e239]:
+            - generic [ref=e240]: ★
+            - generic [ref=e241]: ★
+            - generic [ref=e242]: ★
+            - generic [ref=e243]: ★
+            - generic [ref=e244]: ★
+          - paragraph [ref=e245]: "\""
+          - paragraph [ref=e246]: Am vizitat de mai multe ori și de fiecare dată experiența este perfectă. Napoletano cu crudo și bufala este pur și simplu divin. Serviciu prompt și atmosferă caldă.
+          - generic [ref=e247]:
+            - paragraph [ref=e248]: Maria P.
+            - paragraph [ref=e249]: Google Reviews
+        - generic [ref=e250]:
+          - generic [ref=e251]:
+            - generic [ref=e252]: ★
+            - generic [ref=e253]: ★
+            - generic [ref=e254]: ★
+            - generic [ref=e255]: ★
+            - generic [ref=e256]: ★
+          - paragraph [ref=e257]: "\""
+          - paragraph [ref=e258]: Dacă vrei pizza autentică napolitană în București, nu există altă opțiune. Am stat 3 ani în Napoli și pot spune că este la nivelul pizzeriilor de acolo. Impresionant.
+          - generic [ref=e259]:
+            - paragraph [ref=e260]: Radu C.
+            - paragraph [ref=e261]: Google Reviews
+      - generic [ref=e262]:
+        - generic [ref=e263]:
+          - generic [ref=e264]: 🇮🇹
+          - generic [ref=e265]: Ingrediente DOP din Italia
+        - generic [ref=e266]:
+          - generic [ref=e267]: 🔥
+          - generic [ref=e268]: Cuptor cu lemne · 450°C
+        - generic [ref=e269]:
+          - generic [ref=e270]: 🌾
+          - generic [ref=e271]: Aluat dospit 72 ore
+        - generic [ref=e272]:
+          - generic [ref=e273]: 👨‍🍳
+          - generic [ref=e274]: Maestru Pizzaiolo certificat
+    - generic [ref=e276]:
+      - generic [ref=e277]:
+        - generic [ref=e278]:
+          - paragraph [ref=e279]: Vino la noi
+          - heading "Rezervă-ți masa acum." [level=2] [ref=e280]:
+            - text: Rezervă-ți
+            - emphasis [ref=e281]: masa acum.
+          - generic [ref=e282]:
+            - generic [ref=e283]:
+              - img [ref=e285]
+              - generic [ref=e288]:
+                - paragraph [ref=e289]: Adresă
+                - paragraph [ref=e290]: Ion Nonna Otescu nr. 2
+                - paragraph [ref=e291]: București, Sector 6
+            - generic [ref=e292]:
+              - img [ref=e294]
+              - generic [ref=e296]:
+                - paragraph [ref=e297]: Telefon
+                - link "0731 333 112" [ref=e298] [cursor=pointer]:
+                  - /url: tel:+40731333112
+            - generic [ref=e299]:
+              - img [ref=e301]
+              - generic [ref=e304]:
+                - paragraph [ref=e305]: Program
+                - paragraph [ref=e306]: "Luni – Joi: 12:00 – 23:00"
+                - paragraph [ref=e307]: "Vineri – Duminică: 12:00 – 00:00"
+        - generic [ref=e308]:
+          - heading "Formular de Rezervare" [level=3] [ref=e309]
+          - paragraph [ref=e310]:
+            - text: Sau sună direct la
+            - link "0731 333 112" [ref=e311] [cursor=pointer]:
+              - /url: tel:+40731333112
+          - generic [ref=e312]:
+            - generic [ref=e313]:
+              - generic [ref=e314]: Nume *
+              - textbox "Numele tău" [ref=e315]
+            - generic [ref=e316]:
+              - generic [ref=e317]:
+                - generic [ref=e318]: Persoane
+                - combobox [ref=e319]:
+                  - option "1 persoană"
+                  - option "2 persoane" [selected]
+                  - option "3 persoane"
+                  - option "4 persoane"
+                  - option "5 persoane"
+                  - option "6 persoane"
+                  - option "7 persoane"
+                  - option "8 persoane"
+                  - option "9 persoane"
+                  - option "10 persoane"
+              - generic [ref=e320]:
+                - generic [ref=e321]: Data *
+                - textbox [ref=e322]
+              - generic [ref=e323]:
+                - generic [ref=e324]: Ora *
+                - combobox [ref=e325]:
+                  - option "Alege ora" [selected]
+                  - option "12:00"
+                  - option "12:30"
+                  - option "13:00"
+                  - option "13:30"
+                  - option "14:00"
+                  - option "14:30"
+                  - option "15:00"
+                  - option "15:30"
+                  - option "16:00"
+                  - option "16:30"
+                  - option "17:00"
+                  - option "17:30"
+                  - option "18:00"
+                  - option "18:30"
+                  - option "19:00"
+                  - option "19:30"
+                  - option "20:00"
+                  - option "20:30"
+                  - option "21:00"
+                  - option "21:30"
+                  - option "22:00"
+            - button "Trimite pe WhatsApp" [ref=e326] [cursor=pointer]:
+              - img [ref=e327]
+              - text: Trimite pe WhatsApp
+      - generic [ref=e329]:
+        - iframe [ref=e330]
+        - link "Obține Direcții" [ref=e331] [cursor=pointer]:
+          - /url: https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana&destination_place_id=ChIJ3cczhqH_sUARuysISXSoz_8&travelmode=driving
+          - img [ref=e332]
+          - text: Obține Direcții
+        - generic [ref=e335]:
+          - generic [ref=e336]: 🏳️‍🌈
+          - generic [ref=e337]: LGBT+ Friendly
+    - generic [ref=e338]:
+      - generic [ref=e340]:
+        - generic [ref=e341]:
+          - paragraph [ref=e342]: Rezervă masa ta acum
+          - paragraph [ref=e343]: Capacitate limitată — recomandăm rezervarea în avans
+        - generic [ref=e344]:
+          - link "Sună Acum" [ref=e345] [cursor=pointer]:
+            - /url: tel:+40731333112
+            - img [ref=e346]
+            - text: Sună Acum
+          - link "Rezervă Online" [ref=e348] [cursor=pointer]:
+            - /url: "#rezerva"
+      - generic [ref=e350]:
+        - generic [ref=e351]:
+          - paragraph [ref=e352]: NAPOLETANO
+          - paragraph [ref=e353]: Pizzeria Napoletana · București
+          - paragraph [ref=e354]: Autentică pizzerie napoletană în București. Ingrediente italiene de calitate superioară, aluat dospit 72 de ore, cuptor cu lemne la 450°C.
+          - generic [ref=e355]:
+            - generic [ref=e356]:
+              - link "Facebook" [ref=e357] [cursor=pointer]:
+                - /url: https://www.facebook.com/ventonapoletano
+                - img [ref=e358]
+              - link "Instagram" [ref=e360] [cursor=pointer]:
+                - /url: https://www.instagram.com/ventonapoletano
+                - img [ref=e361]
+              - link "TikTok" [ref=e364] [cursor=pointer]:
+                - /url: https://www.tiktok.com/@ventonapoletano
+                - img [ref=e365]
+              - link "Comandă pe Wolt" [ref=e368] [cursor=pointer]:
+                - /url: https://wolt.com/ro-ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08
+                - img [ref=e369]
+              - link "Comandă pe Glovo" [ref=e371] [cursor=pointer]:
+                - /url: https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc
+                - img [ref=e372]
+              - link "Comandă pe Bolt Food" [ref=e375] [cursor=pointer]:
+                - /url: https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/
+                - img [ref=e376]
+            - paragraph [ref=e378]: Social · Wolt · Glovo · Bolt Food
+        - generic [ref=e379]:
+          - paragraph [ref=e380]: Navigare
+          - list [ref=e381]:
+            - listitem [ref=e382]:
+              - link "Meniu" [ref=e383] [cursor=pointer]:
+                - /url: "#meniu"
+            - listitem [ref=e384]:
+              - link "Povestea Noastră" [ref=e385] [cursor=pointer]:
+                - /url: "#poveste"
+            - listitem [ref=e386]:
+              - link "Galerie" [ref=e387] [cursor=pointer]:
+                - /url: "#galerie"
+            - listitem [ref=e388]:
+              - link "Rezervă Masă" [ref=e389] [cursor=pointer]:
+                - /url: "#rezerva"
+            - listitem [ref=e390]:
+              - link "Contact" [ref=e391] [cursor=pointer]:
+                - /url: "#contact"
+        - generic [ref=e392]:
+          - paragraph [ref=e393]: Contact
+          - list [ref=e394]:
+            - listitem [ref=e395]:
+              - img [ref=e396]
+              - generic [ref=e399]:
+                - link "Ion Nonna Otescu nr. 2 București, Sector 6" [ref=e400] [cursor=pointer]:
+                  - /url: https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving
+                  - text: Ion Nonna Otescu nr. 2
+                  - text: București, Sector 6
+                - link "Vezi Traseu Maps →" [ref=e401] [cursor=pointer]:
+                  - /url: https://www.google.com/maps/dir/?api=1&destination=Napoletano+Pizzeria+Napoletana+Ion+Nonna+Otescu+2+Sector+6+Bucharest&travelmode=driving
+            - listitem [ref=e402]:
+              - img [ref=e403]
+              - link "0731 333 112" [ref=e405] [cursor=pointer]:
+                - /url: tel:+40731333112
+            - listitem [ref=e406]:
+              - img [ref=e407]
+              - generic [ref=e410]:
+                - paragraph [ref=e411]: "Lun – Joi: 12:00 – 23:00"
+                - paragraph [ref=e412]: "Vin – Dum: 12:00 – 00:00"
+      - generic [ref=e414]:
+        - paragraph [ref=e415]: © 2026 Napoletano Pizzeria. Toate drepturile rezervate.
+        - paragraph [ref=e416]: Pizza napoletană autentică din 1889 · București
+    - button [ref=e417] [cursor=pointer]:
+      - img [ref=e418]

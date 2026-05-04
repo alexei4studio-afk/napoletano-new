@@ -1,0 +1,16 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]: Vii tu la noi? Îți mulțumim cu 10% reducere la orice comandă! 🍕
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - link "Acasă" [ref=e6] [cursor=pointer]:
+        - /url: /#galerie
+        - img [ref=e8]
+        - generic [ref=e10]: Acasă
+      - generic [ref=e11]:
+        - paragraph [ref=e12]: Arhiva Vizuală · Napoletano
+        - heading "Galleria" [level=1] [ref=e13]
+        - generic [ref=e14]:
+          - button "TOT" [ref=e15] [cursor=pointer]
+          - button "RESTAURANT" [ref=e16] [cursor=pointer]
+          - button "TERASĂ" [ref=e17] [cursor=pointer]
+          - button "EVENIMENTE" [ref=e18] [cursor=pointer]

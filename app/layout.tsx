@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 // @ts-ignore
 import './globals.css'
+import AnnouncementBar from '@/components/AnnouncementBar'
 
 const OG_IMAGE = 'https://ebzvrpnngblxninmifee.supabase.co/storage/v1/object/public/gallery/napoletano-bucuresti-terasa-1775503085263.webp'
 
@@ -58,6 +59,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
       </head>
       <body>
+        <AnnouncementBar />
         {children}
         <script
           type="application/ld+json"

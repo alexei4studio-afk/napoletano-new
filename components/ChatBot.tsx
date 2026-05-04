@@ -27,18 +27,22 @@ const BOT_RESPONSES: Record<string, string> = {
     'Ne găsești la <b>Ion Nonna Otescu nr. 2, Sector 6, București</b>. Parcare disponibilă în zonă. 📍',
   
   meniu:
-    'Avem pizza napoletană autentică, <b>Panini & Produse Pui</b> și Paste. <a href="#meniu" class="underline font-bold text-[#CE2B37]">Vezi meniul complet aici.</a>',
+    'Avem pizza napoletană autentică, <b>Panini & Produse Pui</b> și Paste. <a href="#meniu" class="underline font-bold text-[#CE2B37]">Vezi meniul complet aici.</a><br/><br/>🎉 <b>Vii la noi? Ai 10% reducere la orice comandă cu pick-up!</b>',
 
   livrare:
-    'Livrăm direct la tine acasă! 🛵<br/><br/><b>Comandă online:</b><br/><div class="flex flex-wrap gap-2 mt-2"><a href="https://wolt.com/ro-ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08" target="_blank" class="inline-block bg-[#009DE0] text-white px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">WOLT</a><a href="https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc" target="_blank" class="inline-block bg-[#FFC244] text-black px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">GLOVO</a><a href="https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/" target="_blank" class="inline-block bg-[#34D186] text-white px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">BOLT FOOD</a></div><br/><b>Sau contactează-ne direct:</b><br/>📞 <a href="tel:0731333112" class="underline font-bold text-[#CE2B37]">0731 333 112</a><br/>💬 <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-[#25D366]">WhatsApp</a>',
+    'Livrăm direct la tine acasă! 🛵<br/><br/><b>Comandă online:</b><br/><div class="flex flex-wrap gap-2 mt-2"><a href="https://wolt.com/ro-ro/rou/bucharest/restaurant/napoletano-6881e1f8128fa8d9f6654e08" target="_blank" class="inline-block bg-[#009DE0] text-white px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">WOLT</a><a href="https://glovoapp.com/ro/ro/bucharest/stores/napoletan-buc" target="_blank" class="inline-block bg-[#FFC244] text-black px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">GLOVO</a><a href="https://food.bolt.eu/ro-ro/325-bucharest/p/152391-napoletano/" target="_blank" class="inline-block bg-[#34D186] text-white px-3 py-1.5 rounded-full text-[10px] font-bold no-underline">BOLT FOOD</a></div><br/><b>Sau contactează-ne direct:</b><br/>📞 <a href="tel:0731333112" class="underline font-bold text-[#CE2B37]">0731 333 112</a><br/>💬 <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-[#25D366]">WhatsApp</a><br/><br/>🍕 <b>Vii la restaurant? Ai 10% reducere la orice comandă cu pick-up!</b>',
 
   produse_noi:
-    'Încearcă noile noastre produse: <b>Panini artizanale</b>, fâșii de pui <b>Crispy</b> sau aripioare picante! Avem și o selecție de produse italiene pentru acasă în secțiunea Parteneri. 🤝'
+    'Încearcă noile noastre produse: <b>Panini artizanale</b>, fâșii de pui <b>Crispy</b> sau aripioare picante! Avem și o selecție de produse italiene pentru acasă în secțiunea Parteneri. 🤝',
+
+  oferta:
+    'Avem o ofertă specială: <b>10% reducere la orice comandă cu pick-up</b> când vii direct la noi! 🎉<br/><br/>📍 Valabil la restaurant — <b>Ion Nonna Otescu nr. 2, Sector 6</b>.<br/><br/>Te așteptăm! <a href="#rezervare" class="underline font-bold text-[#CE2B37]">Rezervă o masă aici.</a>'
 }
 
 function getResponse(input: string): string {
   const lower = input.toLowerCase()
   
+  if (lower.includes('reducere') || lower.includes('discount') || lower.includes('ofert') || lower.includes('10%')) return BOT_RESPONSES.oferta
   if (lower.includes('whatsapp') || lower.includes('scrie') || lower.includes('mesaj')) return BOT_RESPONSES.whatsapp
   if (lower.includes('rezerv') || lower.includes('masa')) return BOT_RESPONSES.rezervare
   if (lower.includes('program') || lower.includes('orar')) return BOT_RESPONSES.program
