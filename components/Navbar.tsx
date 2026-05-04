@@ -85,7 +85,7 @@ export default function Navbar() {
                 <span>0731 333 112</span>
               </a>
               <a
-                href="#rezervare"
+                href="https://www.napoletano.ro/#rezerva"
                 className="bg-pomodoro-600 hover:bg-pomodoro-700 text-white text-xs tracking-widest uppercase font-body px-5 py-2.5 transition-colors duration-200"
               >
                 Rezervă Masă
@@ -170,7 +170,7 @@ export default function Navbar() {
                 0731 333 112
               </a>
               <a
-                href="#rezervare"
+                href="https://www.napoletano.ro/#rezerva"
                 onClick={() => setMenuOpen(false)}
                 className="bg-pomodoro-600 text-white text-xs tracking-widest uppercase font-body px-8 py-3"
               >
