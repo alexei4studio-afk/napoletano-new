@@ -73,7 +73,7 @@ export default function Reservation() {
                 {
                   Icon: Clock,
                   title: 'Program',
-                  lines: ['Luni – Joi: 12:00 – 23:00', 'Vineri – Duminică: 12:00 – 00:00'],
+                  lines: ['Zilnic: 10:00 – 23:00'],
                 },
               ].map(({ Icon, title, lines, href }) => (
                 <motion.div

@@ -18,10 +18,10 @@ const BOT_RESPONSES: Record<string, string> = {
     'Poți să ne scrii direct pe WhatsApp aici pentru detalii rapide: <a href="https://wa.me/40731333112" target="_blank" class="underline font-bold text-[#25D366]">Deschide WhatsApp</a>',
 
   rezervare:
-    'Pentru rezervări poți completa <a href="#rezervare" class="underline font-bold text-[#CE2B37]">formularul de pe site</a>, sau poți suna direct la <a href="tel:0731333112" class="underline font-bold text-[#CE2B37]">0731 333 112</a>. <br/><br/><b>Program:</b> Lun–Joi 12–23, Vin–Dum 12–24.',
+    'Pentru rezervări poți completa <a href="#rezervare" class="underline font-bold text-[#CE2B37]">formularul de pe site</a>, sau poți suna direct la <a href="tel:0731333112" class="underline font-bold text-[#CE2B37]">0731 333 112</a>. <br/><br/><b>Program:</b> Zilnic 10–23.',
   
   program:
-    '<b>Program:</b><br/>Luni – Joi: 12:00 – 23:00<br/>Vineri – Duminică: 12:00 – 00:00.<br/><br/>📍 Ion Nonna Otescu nr. 2, Sector 6.',
+    '<b>Program:</b><br/>Zilnic: 10:00 – 23:00.<br/><br/>📍 Ion Nonna Otescu nr. 2, Sector 6.',
   
   adresa:
     'Ne găsești la <b>Ion Nonna Otescu nr. 2, Sector 6, București</b>. Parcare disponibilă în zonă. 📍',

@@ -128,7 +128,7 @@ export default function DeliverySection() {
 
           {/* Subtext */}
           <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-700 font-light">
-            Disponibil zilnic · 12:00 – 23:00
+            Disponibil zilnic · 10:00 – 23:00
           </p>
         </div>
       </div>
