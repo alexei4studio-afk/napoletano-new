@@ -103,7 +103,7 @@ export default function Hero() {
           {[
             { Icon: MapPin, text: 'Ion Nonna Otescu nr. 2, Sector 6' },
             { Icon: Phone, text: '0731 333 112' },
-            { Icon: Clock, text: 'Lun–Joi: 12–23 · Vin–Dum: 12–00' },
+            { Icon: Clock, text: 'Zilnic: 10–23' },
           ].map(({ Icon, text }) => (
             <span key={text} className="flex items-center gap-2">
               <Icon size={13} className="text-pomodoro-400" />
