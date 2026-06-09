@@ -26,3 +26,21 @@ export type MenuItemRow = {
   badge:       string | null
   sort_order:  number
 }
+
+export type Campaign = {
+  id:               number
+  name:             string
+  discount_percent: number | null
+  discount_fixed:   number | null
+  category_id:      number | null
+  active:           boolean
+  starts_at:        string | null
+  ends_at:          string | null
+  bg_color:         string | null
+  text_color:       string | null
+  font_size:        string | null
+  placement:        string | null
+  show_countdown:   boolean | null
+  image_url:        string | null
+  created_at:       string
+}

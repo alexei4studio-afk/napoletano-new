@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import type { Campaign } from '@/lib/supabaseClient';
+import { CAMPAIGN_COLOR_PRESETS } from '@/lib/campaignPresets';
 
 // ─── Supabase ─────────────────────────────────────────────────────────────────
 const supabase = createClient(
@@ -10,8 +12,9 @@ const supabase = createClient(
 );
 
 // ─── Constante ────────────────────────────────────────────────────────────────
-const MENU_BUCKET    = 'menu-images';
-const GALLERY_BUCKET = 'gallery';
+const MENU_BUCKET     = 'menu-images';
+const GALLERY_BUCKET  = 'gallery';
+const CAMPAIGN_BUCKET = 'campaign-images';
 
 
 const GALLERY_CATEGORIES = ['restaurant', 'terasa', 'evenimente'] as const;
@@ -179,7 +182,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
 
   // Navigare între secțiuni
-  const [activeView, setActiveView] = useState<'cms' | 'gallery'>('cms');
+  const [activeView, setActiveView] = useState<'cms' | 'gallery' | 'campaigns'>('cms');
 
   // Toast
   const [toast, setToast] = useState<string | null>(null);
@@ -215,6 +218,19 @@ export default function AdminPage() {
   const [prodImageFile, setProdImageFile] = useState<File | null>(null);
   const [cmsLoading,    setCmsLoading]    = useState(false);
 
+  // ── Stare CAMPANII ────────────────────────────────────────────────────────
+  const [campList,        setCampList]        = useState<Campaign[]>([]);
+  const [showCampForm,    setShowCampForm]    = useState(false);
+  const [editingCamp,     setEditingCamp]     = useState<Campaign | null>(null);
+  const [campForm,        setCampForm]        = useState({
+    name: '', discount_type: 'percent', discount_value: '', category_id: '',
+    active: 'true', starts_at: '', ends_at: '',
+    bg_color: '', text_color: '', font_size: '', placement: '',
+    show_countdown: '',
+  });
+  const [campImageFile,   setCampImageFile]   = useState<File | null>(null);
+  const [campSaveState,   setCampSaveState]   = useState<'idle' | 'saving' | 'saved'>('idle');
+
   // ── Data fetchers ──────────────────────────────────────────────────────────
   const loadGalleryItems = useCallback(async () => {
     const { data } = await supabase
@@ -243,6 +259,14 @@ export default function AdminPage() {
     if (data) setProducts(data as Product[]);
   }, []);
 
+  const loadCampaigns = useCallback(async () => {
+    const { data } = await supabase
+      .from('campaigns')
+      .select('*')
+      .order('id', { ascending: true });
+    if (data) setCampList(data as Campaign[]);
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setSession(true);
@@ -254,8 +278,9 @@ export default function AdminPage() {
       loadGalleryItems();
       loadCategories();
       loadProducts();
+      loadCampaigns();
     }
-  }, [session, loadGalleryItems, loadCategories, loadProducts]);
+  }, [session, loadGalleryItems, loadCategories, loadProducts, loadCampaigns]);
 
   // ── Handlers imagine produs CMS ────────────────────────────────────────────
 
@@ -471,6 +496,110 @@ export default function AdminPage() {
     loadProducts();
   };
 
+  // ── Handlers CAMPANII ──────────────────────────────────────────────────────
+
+  const uploadCampaignImage = async (file: File): Promise<string | null> => {
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${file.name.split('.').pop()}`;
+    const { error } = await supabase.storage.from(CAMPAIGN_BUCKET).upload(fileName, file);
+    if (error) return null;
+    return supabase.storage.from(CAMPAIGN_BUCKET).getPublicUrl(fileName).data.publicUrl;
+  };
+
+  const openCampForm = (camp?: Campaign) => {
+    if (camp) {
+      setEditingCamp(camp);
+      setCampForm({
+        name: camp.name,
+        discount_type: camp.discount_percent ? 'percent' : 'fixed',
+        discount_value: String(camp.discount_percent || camp.discount_fixed || ''),
+        category_id: camp.category_id ? String(camp.category_id) : '',
+        active: String(camp.active),
+        starts_at: camp.starts_at ? camp.starts_at.slice(0, 16) : '',
+        ends_at: camp.ends_at ? camp.ends_at.slice(0, 16) : '',
+        bg_color: camp.bg_color || '',
+        text_color: camp.text_color || '',
+        font_size: camp.font_size || '',
+        placement: camp.placement || '',
+        show_countdown: camp.show_countdown === null ? '' : String(camp.show_countdown),
+      });
+    } else {
+      setEditingCamp(null);
+      setCampForm({
+        name: '', discount_type: 'percent', discount_value: '', category_id: '',
+        active: 'true', starts_at: '', ends_at: '',
+        bg_color: '', text_color: '', font_size: '', placement: '',
+        show_countdown: '',
+      });
+    }
+    setCampImageFile(null);
+    setShowCampForm(true);
+  };
+
+  const handleSaveCampaign = async () => {
+    if (!campForm.name || !campForm.discount_value) {
+      return showToast('NUME ȘI VALOARE REDUCERE SUNT OBLIGATORII');
+    }
+    setCampSaveState('saving');
+
+    let imageUrl: string | null = editingCamp?.image_url ?? null;
+    if (campImageFile) {
+      const uploaded = await uploadCampaignImage(campImageFile);
+      if (uploaded) imageUrl = uploaded;
+      else { showToast('EROARE UPLOAD IMAGINE'); setCampSaveState('idle'); return; }
+    }
+
+    const val = parseInt(campForm.discount_value);
+    const payload = {
+      name: campForm.name,
+      discount_percent: campForm.discount_type === 'percent' ? val : null,
+      discount_fixed: campForm.discount_type === 'fixed' ? val : null,
+      category_id: campForm.category_id ? parseInt(campForm.category_id) : null,
+      active: campForm.active === 'true',
+      starts_at: campForm.starts_at ? new Date(campForm.starts_at).toISOString() : null,
+      ends_at: campForm.ends_at ? new Date(campForm.ends_at).toISOString() : null,
+      bg_color: campForm.bg_color || null,
+      text_color: campForm.text_color || null,
+      font_size: campForm.font_size || null,
+      placement: campForm.placement || null,
+      show_countdown: campForm.show_countdown === '' ? null : campForm.show_countdown === 'true',
+      image_url: imageUrl,
+    };
+
+    const { error } = editingCamp
+      ? await supabase.from('campaigns').update(payload).eq('id', editingCamp.id)
+      : await supabase.from('campaigns').insert(payload);
+
+    if (error) {
+      showToast('EROARE: ' + error.message);
+      setCampSaveState('idle');
+    } else {
+      setCampSaveState('saved');
+      showToast(editingCamp ? 'CAMPANIE ACTUALIZATĂ' : 'CAMPANIE ADĂUGATĂ');
+      setTimeout(() => setCampSaveState('idle'), 2000);
+      setShowCampForm(false);
+      setEditingCamp(null);
+      setCampImageFile(null);
+      await loadCampaigns();
+    }
+  };
+
+  const handleToggleCampaign = async (camp: Campaign) => {
+    const { error } = await supabase.from('campaigns').update({ active: !camp.active }).eq('id', camp.id);
+    if (error) showToast('EROARE: ' + error.message);
+    else { showToast(camp.active ? 'CAMPANIE DEZACTIVATĂ' : 'CAMPANIE ACTIVATĂ'); loadCampaigns(); }
+  };
+
+  const handleDeleteCampaign = async (camp: Campaign) => {
+    if (!confirm(`Ștergi definitiv campania "${camp.name}"?`)) return;
+    if (camp.image_url) {
+      const path = camp.image_url.split(`/storage/v1/object/public/${CAMPAIGN_BUCKET}/`)[1];
+      if (path) await supabase.storage.from(CAMPAIGN_BUCKET).remove([path]);
+    }
+    const { error } = await supabase.from('campaigns').delete().eq('id', camp.id);
+    if (error) showToast('EROARE: ' + error.message);
+    else { showToast('CAMPANIE ELIMINATĂ'); loadCampaigns(); }
+  };
+
   // ─── Ecran LOGIN ────────────────────────────────────────────────────────────
   if (!session) return (
     <div className="min-h-screen bg-[#fafaf8] flex items-center justify-center p-6">
@@ -528,7 +657,7 @@ export default function AdminPage() {
 
           {/* Switcher secțiuni */}
           <div className="flex overflow-hidden border border-gray-200 rounded-lg">
-            {(['cms', 'gallery'] as const).map(v => (
+            {(['cms', 'gallery', 'campaigns'] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setActiveView(v)}
@@ -536,7 +665,7 @@ export default function AdminPage() {
                   activeView === v ? 'bg-black text-white' : 'text-gray-400 hover:text-black'
                 }`}
               >
-                {v === 'cms' ? 'CMS' : 'GALERIE MEDIA'}
+                {v === 'cms' ? 'CMS' : v === 'gallery' ? 'GALERIE MEDIA' : 'CAMPANII'}
               </button>
             ))}
           </div>
@@ -1209,6 +1338,316 @@ export default function AdminPage() {
                   return <div className="space-y-1">{rows}</div>;
                 })()}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            SECȚIUNEA: CAMPANII
+        ══════════════════════════════════════════════════════════════ */}
+        {activeView === 'campaigns' && (
+          <div className="space-y-8">
+
+            {/* Header */}
+            <div className="bg-[#0d0d0d] rounded-2xl overflow-hidden">
+              <div className="flex h-1">
+                <div className="flex-1 bg-[#009246]" />
+                <div className="flex-1 bg-white" />
+                <div className="flex-1 bg-[#ce2b37]" />
+              </div>
+              <div className="px-8 py-6 flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] tracking-[0.5em] uppercase text-white/40 mb-1">Admin · Promovare</p>
+                  <h2 className="font-display text-3xl md:text-4xl text-white tracking-wide">
+                    Gestiune Campanii
+                  </h2>
+                </div>
+                <button
+                  onClick={() => openCampForm()}
+                  className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-5 py-2.5 rounded-lg hover:bg-cream-100 transition-all"
+                >
+                  + CAMPANIE NOUĂ
+                </button>
+              </div>
+            </div>
+
+            {/* Formular campanie */}
+            {showCampForm && (
+              <div className="bg-[#0d0d0d] rounded-xl p-6 space-y-5 border border-white/10">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
+                  {editingCamp ? 'Editează Campanie' : 'Campanie Nouă'}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Nume */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Nume Campanie</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Black Friday, Reduceri Vară"
+                      value={campForm.name}
+                      onChange={e => setCampForm(p => ({ ...p, name: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    />
+                  </div>
+
+                  {/* Categorie */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Categorie (opțional)</label>
+                    <select
+                      value={campForm.category_id}
+                      onChange={e => setCampForm(p => ({ ...p, category_id: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    >
+                      <option value="">Toate categoriile</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={String(c.id)}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Tip reducere */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Tip Reducere</label>
+                    <div className="flex gap-2">
+                      {(['percent', 'fixed'] as const).map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setCampForm(p => ({ ...p, discount_type: t }))}
+                          className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest border rounded-lg transition-all ${
+                            campForm.discount_type === t ? 'bg-white text-black border-white' : 'border-white/20 text-white/40 hover:border-white/40'
+                          }`}
+                        >
+                          {t === 'percent' ? 'PROCENT %' : 'SUMĂ FIXĂ LEI'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Valoare */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                      Valoare ({campForm.discount_type === 'percent' ? '%' : 'LEI'})
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder={campForm.discount_type === 'percent' ? 'Ex: 15' : 'Ex: 25'}
+                      value={campForm.discount_value}
+                      onChange={e => setCampForm(p => ({ ...p, discount_value: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    />
+                  </div>
+
+                  {/* Status */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Status</label>
+                    <select
+                      value={campForm.active}
+                      onChange={e => setCampForm(p => ({ ...p, active: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    >
+                      <option value="true">Activă</option>
+                      <option value="false">Inactivă</option>
+                    </select>
+                  </div>
+
+                  {/* Countdown */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Numărătoare Inversă</label>
+                    <select
+                      value={campForm.show_countdown}
+                      onChange={e => setCampForm(p => ({ ...p, show_countdown: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    >
+                      <option value="">Implicit (Da)</option>
+                      <option value="true">Da</option>
+                      <option value="false">Nu</option>
+                    </select>
+                  </div>
+
+                  {/* Start date */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Început (opțional)</label>
+                    <input
+                      type="datetime-local"
+                      value={campForm.starts_at}
+                      onChange={e => setCampForm(p => ({ ...p, starts_at: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    />
+                  </div>
+
+                  {/* End date */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Sfârșit (opțional)</label>
+                    <input
+                      type="datetime-local"
+                      value={campForm.ends_at}
+                      onChange={e => setCampForm(p => ({ ...p, ends_at: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                    />
+                  </div>
+                </div>
+
+                {/* Visual overrides */}
+                <div className="border-t border-white/10 pt-4 space-y-3">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">
+                    Personalizare vizuală (opțional — altfel se folosesc culorile preset)
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Culoare Fundal</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: #c0392b sau linear-gradient(...)"
+                        value={campForm.bg_color}
+                        onChange={e => setCampForm(p => ({ ...p, bg_color: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Culoare Text</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: #ffffff"
+                        value={campForm.text_color}
+                        onChange={e => setCampForm(p => ({ ...p, text_color: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Dimensiune Font</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: 14px"
+                        value={campForm.font_size}
+                        onChange={e => setCampForm(p => ({ ...p, font_size: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 p-2.5 rounded-lg text-sm focus:outline-none focus:border-white/40"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Image upload */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-white/40">Imagine Banner (opțional)</label>
+                  <label className="flex flex-col items-center justify-center w-full h-[76px] border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/40 transition-all">
+                    {campImageFile ? (
+                      <span className="text-[10px] font-bold text-green-400 text-center px-2">
+                        ✓ {campImageFile.name}
+                      </span>
+                    ) : editingCamp?.image_url ? (
+                      <span className="text-[10px] font-bold text-white/50 text-center px-2">
+                        Imagine existentă · click pentru a schimba
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase text-white/30">
+                        + SELECTEAZĂ IMAGINE
+                      </span>
+                    )}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={e => setCampImageFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleSaveCampaign}
+                    disabled={campSaveState === 'saving'}
+                    className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-cream-100 transition-all disabled:opacity-50"
+                  >
+                    {campSaveState === 'saving' ? 'SE SALVEAZĂ...' : campSaveState === 'saved' ? '✓ SALVAT' : (editingCamp ? 'ACTUALIZEAZĂ' : 'SALVEAZĂ CAMPANIA')}
+                  </button>
+                  <button
+                    onClick={() => { setShowCampForm(false); setEditingCamp(null); setCampImageFile(null); }}
+                    className="px-6 py-3 text-[10px] font-black uppercase tracking-widest border border-white/20 text-white/60 rounded-lg hover:border-white/40 transition-all"
+                  >
+                    ANULEAZĂ
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista campanii */}
+            <div className="space-y-2">
+              {campList.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-100 rounded-xl py-16 text-center">
+                  <p className="text-[10px] uppercase tracking-[0.4em] text-gray-300">
+                    NICIO CAMPANIE — CREEAZĂ PRIMA CAMPANIE
+                  </p>
+                </div>
+              ) : (
+                campList.map((camp, idx) => {
+                  const preset = CAMPAIGN_COLOR_PRESETS[idx % CAMPAIGN_COLOR_PRESETS.length];
+                  const discountText = camp.discount_percent
+                    ? `${camp.discount_percent}%`
+                    : `${camp.discount_fixed} LEI`;
+                  return (
+                    <div
+                      key={camp.id}
+                      className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-[#f7f5f0] group hover:border-gray-200 transition-all"
+                    >
+                      {/* Color stripe */}
+                      <div
+                        className="w-1.5 self-stretch rounded-full shrink-0"
+                        style={{ background: camp.bg_color || preset.bg }}
+                      />
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`inline-block w-2 h-2 rounded-full shrink-0 ${camp.active ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                          <p className="font-black text-sm truncate">{camp.name}</p>
+                          <span
+                            className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full text-white shrink-0"
+                            style={{ background: camp.bg_color || preset.bg }}
+                          >
+                            CAMPANIE {idx + 1}
+                          </span>
+                        </div>
+                        <p className="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">
+                          Reducere {discountText}
+                          {camp.starts_at && <span className="ml-2">· De la {new Date(camp.starts_at).toLocaleDateString('ro-RO')}</span>}
+                          {camp.ends_at && <span className="ml-1">până la {new Date(camp.ends_at).toLocaleDateString('ro-RO')}</span>}
+                        </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                        <button
+                          onClick={() => openCampForm(camp)}
+                          className="text-[9px] font-black uppercase px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-black hover:text-white hover:border-black transition-all"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          onClick={() => handleToggleCampaign(camp)}
+                          className={`text-[9px] font-black uppercase px-3 py-1.5 border rounded-lg transition-all ${
+                            camp.active
+                              ? 'border-orange-200 text-orange-500 hover:bg-orange-500 hover:text-white hover:border-orange-500'
+                              : 'border-green-200 text-green-500 hover:bg-green-500 hover:text-white hover:border-green-500'
+                          }`}
+                        >
+                          {camp.active ? 'DEZACT.' : 'ACTIV.'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCampaign(camp)}
+                          className="text-[9px] font-black uppercase px-3 py-1.5 border border-red-200 text-red-400 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}

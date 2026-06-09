@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Phone, Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import { useCampaignBanner } from '@/lib/CampaignContext'
 
 const navLinks = [
   { href: '#meniu', label: 'Meniu' },
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { bannerHeight } = useCampaignBanner()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60)
@@ -29,7 +31,8 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className={`fixed top-9 left-0 right-0 z-50 transition-all duration-500 ${
+        style={{ top: `${bannerHeight}px` }}
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
             ? 'bg-cream-50/95 backdrop-blur-md border-b border-cream-300 shadow-sm'
             : 'bg-transparent'
@@ -112,7 +115,7 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ duration: 0.35, ease: 'easeInOut' }}
-            className="fixed inset-0 z-40 bg-charcoal-900 flex flex-col justify-center items-center gap-10 md:hidden"
+            className="fixed inset-0 z-[65] bg-charcoal-900 flex flex-col justify-center items-center gap-10 md:hidden"
           >
             {/* Decorative */}
             <div className="absolute top-8 left-8 right-8 flex items-center justify-between">
