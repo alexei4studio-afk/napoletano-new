@@ -75,7 +75,7 @@ function ProductCard({ item, idx }: { item: Product; idx: number }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: Math.min(idx * 0.04, 0.35) }}
-      className="bg-[#1C1A17] border border-white/10 overflow-hidden"
+      className="group bg-[#1C1A17] border border-white/10 overflow-hidden relative"
     >
       {item.image_url ? (
         // ── Cu imagine ────────────────────────────────
@@ -153,6 +153,11 @@ function ProductCard({ item, idx }: { item: Product; idx: number }) {
           </div>
         </div>
       )}
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] flex scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left">
+        <div className="flex-1 bg-[#009246]" />
+        <div className="flex-1 bg-white" />
+        <div className="flex-1 bg-[#CE2B37]" />
+      </div>
     </motion.div>
   )
 }
@@ -221,6 +226,12 @@ function MeniuContent() {
           <div className="flex-1 bg-white" />
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
+
+        <img
+          src="/logo-monochrome.png"
+          alt="Napoletano Logo"
+          className="h-14 w-auto mx-auto mb-3 brightness-0 invert opacity-50"
+        />
 
         <p className="text-[#CE2B37] text-[9px] tracking-[0.5em] uppercase font-body mb-2">
           Pizzerie Napoletană · București
