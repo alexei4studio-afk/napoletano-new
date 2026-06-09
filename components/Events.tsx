@@ -79,11 +79,10 @@ export default function Events() {
               Cere o ofertă: 0731 333 112
             </a>
           </div>
-          {/* Imagine — înlocuiește src cu poza ta */}
           <div className="relative min-h-[280px] md:min-h-0">
             <img
-              src="/events-terasa.jpg"
-              alt="Petrecere pe terasa Napoletano București"
+              src="https://ebzvrpnngblxninmifee.supabase.co/storage/v1/object/public/gallery/napoletano-bucuresti-terasa-1775503085263.webp"
+              alt="Terasa amenajată a Restaurantului Napoletano București"
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[#1C1A17] via-[#1C1A17]/40 to-transparent md:block hidden" />
