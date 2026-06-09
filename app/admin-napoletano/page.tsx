@@ -884,8 +884,8 @@ export default function AdminPage() {
                         />
                       )}
 
-                      {/* Overlay hover */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/75 transition-all duration-300 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 p-3">
+                      {/* Overlay — always visible on mobile, hover on desktop */}
+                      <div className="absolute inset-0 bg-black/60 md:bg-black/0 md:group-hover:bg-black/75 transition-all duration-300 flex flex-col items-center justify-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 p-3">
                         <span className="text-[8px] font-black uppercase text-white tracking-widest bg-white/10 border border-white/20 px-2 py-0.5 rounded">
                           {GALLERY_CATEGORY_LABELS[item.category]} · {item.type}
                         </span>
@@ -903,7 +903,7 @@ export default function AdminPage() {
                       </div>
 
                       {/* Badge tip */}
-                      <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-2 left-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <span className={`text-[7px] font-black uppercase px-1.5 py-0.5 rounded ${
                           item.type === 'video' ? 'bg-purple-600 text-white' : 'bg-black/60 text-white'
                         }`}>
@@ -1042,7 +1042,7 @@ export default function AdminPage() {
                             {cat.label_it && <span className="ml-1 italic">· {cat.label_it}</span>}
                           </p>
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all" onClick={e => e.stopPropagation()}>
+                        <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => openCatForm(cat)}
                             className={`text-[9px] font-black uppercase px-3 py-1.5 border rounded-lg transition-all ${cmsProdCat === String(cat.id) ? 'border-white/30 text-white hover:bg-white hover:text-black' : 'border-gray-300 hover:bg-black hover:text-white hover:border-black'}`}
@@ -1317,7 +1317,7 @@ export default function AdminPage() {
                             <p className="text-[9px] text-gray-500 truncate mt-0.5">{prod.description}</p>
                           )}
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                        <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all flex-shrink-0">
                           <button
                             onClick={() => openProdForm(prod)}
                             className="text-[9px] font-black uppercase px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-black hover:text-white hover:border-black transition-all"
@@ -1620,7 +1620,7 @@ export default function AdminPage() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                      <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all shrink-0">
                         <button
                           onClick={() => openCampForm(camp)}
                           className="text-[9px] font-black uppercase px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-black hover:text-white hover:border-black transition-all"

@@ -94,13 +94,22 @@ export default function Footer() {
 
           {/* ── Brand col ── */}
           <div className="sm:col-span-2 lg:col-span-2">
-            <p className="font-display text-3xl font-light text-white tracking-widest mb-1"
-              style={{ letterSpacing: '0.2em' }}>
-              NAPOLETANO
-            </p>
-            <p className="text-xs tracking-[0.35em] text-pomodoro-400 uppercase font-body mb-5">
-              Pizzeria Napoletana · București
-            </p>
+            <div className="flex items-center gap-4 mb-5">
+              <img
+                src="/logo-monochrome.png"
+                alt="Napoletano Logo"
+                className="h-14 w-auto brightness-0 invert opacity-60"
+              />
+              <div>
+                <p className="font-display text-3xl font-light text-white tracking-widest mb-1"
+                  style={{ letterSpacing: '0.2em' }}>
+                  NAPOLETANO
+                </p>
+                <p className="text-xs tracking-[0.35em] text-pomodoro-400 uppercase font-body">
+                  Pizzeria Napoletana · București
+                </p>
+              </div>
+            </div>
             <p className="text-white/40 font-body font-light text-sm leading-relaxed max-w-sm mb-8">
               Autentică pizzerie napoletană în București. Ingrediente italiene de calitate
               superioară, aluat dospit 72 de ore, cuptor cu lemne la 450°C.

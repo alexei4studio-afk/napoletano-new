@@ -65,22 +65,28 @@ export default function Events() {
           ))}
         </div>
 
-        <div className="mt-16 bg-[#1C1A17] p-8 md:p-12 text-center text-white relative overflow-hidden">
-          <div className="relative z-10">
+        <div className="mt-16 bg-[#1C1A17] text-white relative overflow-hidden grid grid-cols-1 md:grid-cols-2">
+          {/* Text */}
+          <div className="relative z-10 p-8 md:p-12 flex flex-col justify-center">
             <h3 className="font-display text-2xl md:text-3xl mb-4 italic">Vrei să rezervi întreaga terasă?</h3>
-            <p className="font-body text-white/70 mb-8 max-w-xl mx-auto">
+            <p className="font-body text-white/70 mb-8 max-w-xl">
               Suntem aici să facem din evenimentul tău o experiență memorabilă cu arome napoletane.
             </p>
-            <a 
-              href="tel:0731333112" 
-              className="inline-block bg-[#CE2B37] hover:bg-white hover:text-[#CE2B37] text-white px-10 py-4 transition-all font-bold uppercase tracking-widest text-sm"
+            <a
+              href="tel:0731333112"
+              className="inline-block bg-[#CE2B37] hover:bg-white hover:text-[#CE2B37] text-white px-10 py-4 transition-all font-bold uppercase tracking-widest text-sm w-fit"
             >
               Cere o ofertă: 0731 333 112
             </a>
           </div>
-          {/* Decor subtil */}
-          <div className="absolute top-0 right-0 opacity-10 font-display text-[150px] pointer-events-none select-none translate-x-1/3 translate-y-1/3">
-            🇮🇹
+          {/* Imagine — înlocuiește src cu poza ta */}
+          <div className="relative min-h-[280px] md:min-h-0">
+            <img
+              src="/events-terasa.jpg"
+              alt="Petrecere pe terasa Napoletano București"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1C1A17] via-[#1C1A17]/40 to-transparent md:block hidden" />
           </div>
         </div>
 

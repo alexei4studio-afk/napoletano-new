@@ -79,7 +79,7 @@ function ProductCard({ item, idx }: { item: Product; idx: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: Math.min(idx * 0.04, 0.4) }}
-      className="bg-white border border-[#E8E0D5] p-6 hover:shadow-md transition-shadow duration-300"
+      className="group bg-white border border-[#E8E0D5] p-6 hover:shadow-md transition-shadow duration-300 relative overflow-hidden"
     >
       {/* Imagine produs (opțional) */}
       {item.image_url && (
@@ -122,6 +122,11 @@ function ProductCard({ item, idx }: { item: Product; idx: number }) {
           {item.weight}
         </p>
       )}
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] flex scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left">
+        <div className="flex-1 bg-[#009246]" />
+        <div className="flex-1 bg-white" />
+        <div className="flex-1 bg-[#CE2B37]" />
+      </div>
     </motion.div>
   )
 }

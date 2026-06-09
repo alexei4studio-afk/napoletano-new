@@ -142,11 +142,7 @@ export default function AnnouncementBar() {
               className="relative overflow-hidden"
             >
               <div className="flex items-center justify-center gap-2 md:gap-3 py-2.5 md:py-3 px-10 text-center font-body font-bold">
-                <span className="inline-flex items-center px-2 md:px-2.5 py-0.5 rounded-full bg-white/20 text-[8px] md:text-[10px] font-black uppercase tracking-widest shrink-0">
-                  CAMPANIE {index + 1}
-                </span>
-
-                {camp.image_url && (
+{camp.image_url && (
                   <img
                     src={camp.image_url}
                     alt={camp.name}

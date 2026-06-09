@@ -41,18 +41,25 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link href="/" className="flex flex-col leading-none">
-              <span
-                className="font-display text-2xl md:text-3xl font-light tracking-widest text-charcoal-900"
-                style={{ letterSpacing: '0.2em' }}
-              >
-                NAPOLETANO
-              </span>
-              <span
-                className="text-[10px] tracking-[0.35em] text-pomodoro-600 uppercase font-body font-light"
-              >
-                Pizzeria Napoletana
-              </span>
+            <Link href="/" className="flex items-center gap-3 leading-none">
+              <img
+                src="/logo.png"
+                alt="Napoletano Logo"
+                className="h-10 md:h-12 w-auto"
+              />
+              <div className="flex flex-col">
+                <span
+                  className="font-display text-2xl md:text-3xl font-light tracking-widest text-charcoal-900"
+                  style={{ letterSpacing: '0.2em' }}
+                >
+                  NAPOLETANO
+                </span>
+                <span
+                  className="text-[10px] tracking-[0.35em] text-pomodoro-600 uppercase font-body font-light"
+                >
+                  Pizzeria Napoletana
+                </span>
+              </div>
             </Link>
 
             {/* Desktop Nav */}
@@ -119,7 +126,14 @@ export default function Navbar() {
           >
             {/* Decorative */}
             <div className="absolute top-8 left-8 right-8 flex items-center justify-between">
-              <span className="font-display text-xl text-white/30 tracking-widest">NAPOLETANO</span>
+              <div className="flex items-center gap-3">
+                <img
+                  src="/logo-monochrome.png"
+                  alt="Napoletano"
+                  className="h-8 w-auto opacity-40"
+                />
+                <span className="font-display text-xl text-white/30 tracking-widest">NAPOLETANO</span>
+              </div>
               <button
                 onClick={() => setMenuOpen(false)}
                 className="text-white/60 hover:text-white"
